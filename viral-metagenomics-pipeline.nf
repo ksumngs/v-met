@@ -1,49 +1,48 @@
 #!/usr/bin/env nextflow
 
-params.R1
-params.R2
+params.readsfolder
 params.threads
-params.out
-
-Channel
-    .fromPath(params.R1)
-    .set{ ForwardRead }
-Channel
-    .fromPath(params.R2)
-    .set{ ReverseRead }
 
 NumThreads = params.threads
 
-process trim {
+Channel
+    .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq,fasta,fa}.{gz,bz,bz2}")
+    .set{ RawReads }
+
+process trimmomatic {
     input:
-        path ForwardRead
-        path ReverseRead
-        val NumThreads
+        set val(sampleName), file(readsFiles) from RawReads
 
     output:
-        file 'paired_out_R1.fastq.gz' into Paired1
-        file 'unpaired_out_R1.fastq.gz' into Unpaired1
-        file 'paired_out_R2.fastq.gz' into Paired2
-        file 'unpaired_out_R2.fastq.gz' into Unpaired2
+        tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into TrimmomaticReads
 
-        shell:
-        '''
-            trimmomatic PE -threads !{NumThreads} \
-                !{ForwardRead} \
-                !{ReverseRead} \
-                paired_out_R1.fastq.gz \
-                unpaired_out_R1.fastq.gz \
-                paired_out_R2.fastq.gz \
-                unpaired_out_R2.fastq.gz \
+        script:
+        """
+            trimmomatic PE -threads ${NumThreads} \
+                ${readsFiles} \
+                ${sampleName}_trimmomatic_R1.fastq.gz \
+                /dev/null \
+                ${sampleName}_trimmomatic_R2.fastq.gz \
+                /dev/null \
                 ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
-        '''
+        """
 }
 
-Paired1
-    .collectFile()
-Paired2
-    .collectFile()
-Unpaired1
-    .collectFile()
-Unpaired2
-    .collectFile()
+process seqpurge {
+    conda 'bioconda::ngs-bits'
+
+    input:
+        set val(sampleName), file(readsFiles) from TrimmomaticReads
+
+    output:
+        tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into SeqPurgeReads
+
+    script:
+    """
+        SeqPurge -threads ${NumThreads} \
+            -in1  ${readsFiles[0]} \
+            -in2  ${readsFiles[1]} \
+            -out1 ${sampleName}_seqpurge_R1.fastq.gz \
+            -out2 ${sampleName}_seqpurge_R2.fastq.gz
+    """
+}

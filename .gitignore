@@ -12,3 +12,6 @@
 ### Nextflow gitignore ###
 .nextflow*
 work
+
+### Example files ###
+miseq_examples
