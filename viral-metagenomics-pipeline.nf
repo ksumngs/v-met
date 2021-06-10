@@ -1,9 +1,11 @@
 #!/usr/bin/env nextflow
 
-params.readsfolder
-params.threads
+params.readsfolder = "."
+params.threads = 4
+params.krakendb = "/kraken2-db"
 
 NumThreads = params.threads
+KrakenDb = params.krakendb
 
 Channel
     .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq,fasta,fa}.{gz,bz,bz2}")
@@ -45,4 +47,22 @@ process seqpurge {
             -out1 ${sampleName}_seqpurge_R1.fastq.gz \
             -out2 ${sampleName}_seqpurge_R2.fastq.gz
     """
+}
+
+process kraken {
+    input:
+        set val(sampleName), file(readsFiles) from SeqPurgeReads
+
+    output:
+        tuple sampleName, file("${sampleName}.kraken") into KrakenClassifieds
+        tuple sampleName, file("${sampleName}_kraken{_1,_2}.fastq.gz") into KrakenReads
+
+    script:
+    """
+        kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
+            --classified-out "${sampleName}_kraken#.fastq.gz" \
+            --output "${sampleName}.kraken" \
+            ${readsFiles}
+    """
+
 }
