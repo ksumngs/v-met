@@ -38,6 +38,7 @@ process seqpurge {
 
     output:
         tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into SeqPurgeReads
+        tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into KrakenInReads
 
     script:
     """
@@ -54,18 +55,86 @@ process kraken {
         set val(sampleName), file(readsFiles) from SeqPurgeReads
 
     output:
-        tuple sampleName, file("${sampleName}.kraken") into KrakenClassifieds
-        tuple sampleName, file("${sampleName}.krpt") into KrakenReport
-        tuple sampleName, file("${sampleName}_kraken{_1,_2}.fastq.gz") into KrakenReads
+        tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
+        tuple sampleName, file("${sampleName}.krpt") into KrakenVisuals
 
     script:
     """
         kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
-            --classified-out "${sampleName}_kraken#.fastq.gz" \
             --use-names \
             --report "${sampleName}.krpt" \
             --output "${sampleName}.kraken" \
             ${readsFiles}
+    """
+
+}
+
+process filterreads {
+    conda 'bioconda::krakentools'
+
+    input:
+        set val(devnull), file(readsFiles) from KrakenInReads
+        set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
+
+    output:
+        tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads
+
+    // Although I haven't seen it documented anywhere, 0 is unclassified reads
+    // and 10239 is viral reads
+    script:
+    """
+        extract_kraken_reads.py -k ${krakenFile} \
+        -s1 ${readsFiles[0]} -s2 ${readsFiles[1]} \
+        -r ${krakenReport} \
+        -t 0 1 --include-children \
+        --fastq-output \
+        -o ${sampleName}_filtered_R1.fastq -o2 ${sampleName}_filtered_R2.fastq
+        gzip ${sampleName}_filtered_{R1,R2}.fastq
+    """
+
+}
+
+process kraken2krona {
+    conda 'bioconda::krakentools'
+
+    input:
+        set val(sampleName), file(krakenReport) from KrakenVisuals
+
+    output:
+        tuple val(sampleName), file("${sampleName}.krona") into KronaText
+
+    script:
+    """
+        kreport2krona.py -r ${krakenReport} -o ${sampleName}.krona
+    """
+}
+
+process krona {
+    conda 'bioconda::krona'
+
+    input:
+        set val(sampleName), file(kronaText) from KronaText
+
+    output:
+        tuple val(sampleName), file("${sampleName}.html") into KronaWebPage
+
+    script:
+    """
+        ktImportText ${kronaText} -o ${sampleName}.html
+    """
+}
+
+process ray {
+    input:
+        set val(sampleName), file(readsFiles) from FilteredReads
+
+    output:
+        tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs
+        tuple val(sampleName), file("RayOutput/Scaffolds.fasta") into RayScaffolds
+
+    script:
+    """
+        mpiexec --use-hwthread-cpus Ray -p ${readsFiles}
     """
 
 }

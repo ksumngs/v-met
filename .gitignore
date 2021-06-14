@@ -12,6 +12,9 @@
 ### Nextflow gitignore ###
 .nextflow*
 work
+pipeline_info
 
 ### Example files ###
 miseq_examples
+krakendata
+examples
