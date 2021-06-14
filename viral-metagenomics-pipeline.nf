@@ -55,12 +55,15 @@ process kraken {
 
     output:
         tuple sampleName, file("${sampleName}.kraken") into KrakenClassifieds
+        tuple sampleName, file("${sampleName}.krpt") into KrakenReport
         tuple sampleName, file("${sampleName}_kraken{_1,_2}.fastq.gz") into KrakenReads
 
     script:
     """
         kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
             --classified-out "${sampleName}_kraken#.fastq.gz" \
+            --use-names \
+            --report "${sampleName}.krpt" \
             --output "${sampleName}.kraken" \
             ${readsFiles}
     """
