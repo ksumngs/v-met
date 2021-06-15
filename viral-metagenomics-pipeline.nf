@@ -60,7 +60,7 @@ process kraken {
 
     script:
     """
-        kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
+        kraken2 --db ${KrakenDb} --threads ${NumTehreads} --paired \
             --use-names \
             --report "${sampleName}.krpt" \
             --output "${sampleName}.kraken" \
@@ -103,10 +103,14 @@ process kraken2krona {
     output:
         tuple val(sampleName), file("${sampleName}.krona") into KronaText
 
-    script:
-    """
-        kreport2krona.py -r ${krakenReport} -o ${sampleName}.krona
-    """
+    shell:
+    '''
+        kreport2krona.py -r !{krakenReport} -o !{sampleName}.krona
+        LEVELS=(d k p c o f g s)
+        for L in $LEVELS; do
+            sed -i "s/${L}__//" !{sampleName}.krona
+        done
+    '''
 }
 
 process krona {
@@ -124,6 +128,7 @@ process krona {
     """
 }
 
+/*
 process ray {
     input:
         set val(sampleName), file(readsFiles) from FilteredReads
@@ -134,7 +139,8 @@ process ray {
 
     script:
     """
-        mpiexec --use-hwthread-cpus Ray -p ${readsFiles}
+        mpiexec -n ${NumThreads} Ray -p ${readsFiles}
     """
 
 }
+*/
