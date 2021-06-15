@@ -2,10 +2,20 @@
 
 params.readsfolder = "."
 params.threads = 4
+params.outfolder = ""
 params.krakendb = "/kraken2-db"
+params.runname = "viral-metagenomics"
 
 NumThreads = params.threads
 KrakenDb = params.krakendb
+RunName = params.runname
+
+if(params.outfolder == "") {
+    OutFolder = RunName + "_out"
+}
+else {
+    OutFolder = params.outfolder
+}
 
 Channel
     .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq,fasta,fa}.{gz,bz,bz2}")
@@ -60,7 +70,7 @@ process kraken {
 
     script:
     """
-        kraken2 --db ${KrakenDb} --threads ${NumTehreads} --paired \
+        kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
             --use-names \
             --report "${sampleName}.krpt" \
             --output "${sampleName}.kraken" \
@@ -101,10 +111,11 @@ process kraken2krona {
         set val(sampleName), file(krakenReport) from KrakenVisuals
 
     output:
-        tuple val(sampleName), file("${sampleName}.krona") into KronaText
+        file("${sampleName}.krona") into KronaText
 
     shell:
     '''
+        #!/bin/bash
         kreport2krona.py -r !{krakenReport} -o !{sampleName}.krona
         LEVELS=(d k p c o f g s)
         for L in $LEVELS; do
@@ -116,15 +127,17 @@ process kraken2krona {
 process krona {
     conda 'bioconda::krona'
 
+    publishDir OutFolder, mode: 'move'
+
     input:
-        set val(sampleName), file(kronaText) from KronaText
+        file("*.krona") from KronaText.collect()
 
     output:
-        tuple val(sampleName), file("${sampleName}.html") into KronaWebPage
+        file("${RunName}.html") into KronaWebPage
 
     script:
     """
-        ktImportText ${kronaText} -o ${sampleName}.html
+        ktImportText *.krona -o ${RunName}.html
     """
 }
 
