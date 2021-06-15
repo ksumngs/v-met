@@ -16,7 +16,7 @@ process trimmomatic {
         set val(sampleName), file(readsFiles) from RawReads
 
     output:
-        tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into TrimmomaticReads
+        tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into OnceTrimmedReads
 
         script:
         """
@@ -34,11 +34,11 @@ process seqpurge {
     conda 'bioconda::ngs-bits'
 
     input:
-        set val(sampleName), file(readsFiles) from TrimmomaticReads
+        set val(sampleName), file(readsFiles) from OnceTrimmedReads
 
     output:
-        tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into SeqPurgeReads
-        tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into KrakenInReads
+        tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into TwiceTrimmedReads
+        tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into KrakenInputReads
 
     script:
     """
@@ -52,7 +52,7 @@ process seqpurge {
 
 process kraken {
     input:
-        set val(sampleName), file(readsFiles) from SeqPurgeReads
+        set val(sampleName), file(readsFiles) from TwiceTrimmedReads
 
     output:
         tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
@@ -73,7 +73,7 @@ process filterreads {
     conda 'bioconda::krakentools'
 
     input:
-        set val(devnull), file(readsFiles) from KrakenInReads
+        set val(devnull), file(readsFiles) from KrakenInputReads
         set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
 
     output:
@@ -86,7 +86,7 @@ process filterreads {
         extract_kraken_reads.py -k ${krakenFile} \
         -s1 ${readsFiles[0]} -s2 ${readsFiles[1]} \
         -r ${krakenReport} \
-        -t 0 1 --include-children \
+        -t 0 10239 --include-children \
         --fastq-output \
         -o ${sampleName}_filtered_R1.fastq -o2 ${sampleName}_filtered_R2.fastq
         gzip ${sampleName}_filtered_{R1,R2}.fastq
