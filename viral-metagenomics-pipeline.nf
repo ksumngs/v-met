@@ -118,9 +118,10 @@ process kraken2krona {
         #!/bin/bash
         kreport2krona.py -r !{krakenReport} -o !{sampleName}.krona
         LEVELS=(d k p c o f g s)
-        for L in $LEVELS; do
-            sed -i "s/${L}__//" !{sampleName}.krona
+        for L in "${LEVELS[@]}"; do
+            sed -i "s/${L}__//g" !{sampleName}.krona
         done
+        sed -i "s/_/ /g" !{sampleName}.krona
     '''
 }
 
@@ -130,14 +131,14 @@ process krona {
     publishDir OutFolder, mode: 'move'
 
     input:
-        file("*.krona") from KronaText.collect()
+        file '*' from KronaText.collect()
 
     output:
         file("${RunName}.html") into KronaWebPage
 
     script:
     """
-        ktImportText *.krona -o ${RunName}.html
+        ktImportText * -o ${RunName}.html -n root
     """
 }
 
