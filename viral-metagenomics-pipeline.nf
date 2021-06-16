@@ -1,15 +1,30 @@
 #!/usr/bin/env nextflow
 
+/* Parameter Delcarations
+    --readsfolder       The folder containing parired-end Illumina reads in
+                            gzipped fastq format. Defaults to the current
+                            directory
+    --threads           Number of threads to process each sample with. Can't be
+                            adjusted on a per-process basic. Defaults to 4
+    --krakendb          The storage location of the Kraken2 database. Defaults
+                            to /kraken2-db
+    --runname           A friendly identifier to describe the samples being
+                            analyzed. Defaults to 'viral-metagenomics'
+    --outfolder         The place where the final anlysis products will be
+                            stored. Defaults to runname_out
+*/
 params.readsfolder = "."
 params.threads = 4
 params.outfolder = ""
 params.krakendb = "/kraken2-db"
 params.runname = "viral-metagenomics"
 
+// Make params persist that need to
 NumThreads = params.threads
 KrakenDb = params.krakendb
 RunName = params.runname
 
+// Create an outfolder name if one wasn't provided
 if(params.outfolder == "") {
     OutFolder = RunName + "_out"
 }
@@ -17,10 +32,12 @@ else {
     OutFolder = params.outfolder
 }
 
+// Bring in the reads files
 Channel
-    .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq,fasta,fa}.{gz,bz,bz2}")
+    .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.{gz,bz,bz2}")
     .set{ RawReads }
 
+// First trim, using Trimmomatic
 process trimmomatic {
     input:
         set val(sampleName), file(readsFiles) from RawReads
@@ -30,6 +47,7 @@ process trimmomatic {
 
         script:
         """
+            # Very generic trimmomatic settings, except that unpaired reads are discarded
             trimmomatic PE -threads ${NumThreads} \
                 ${readsFiles} \
                 ${sampleName}_trimmomatic_R1.fastq.gz \
@@ -40,15 +58,19 @@ process trimmomatic {
         """
 }
 
+// Secord trim, using SeqPurge
 process seqpurge {
     conda 'bioconda::ngs-bits'
 
     input:
         set val(sampleName), file(readsFiles) from OnceTrimmedReads
 
+    // These trimmed reads start a branching path:
+    // First branch: get classified by Kraken and produce visuals
+    // Secord branch: based on classification, go to de novo assembly
     output:
         tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into TwiceTrimmedReads
-        tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into KrakenInputReads
+        file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into KrakenInputReads
 
     script:
     """
@@ -60,6 +82,7 @@ process seqpurge {
     """
 }
 
+// Classify reads using Kraken
 process kraken {
     input:
         set val(sampleName), file(readsFiles) from TwiceTrimmedReads
@@ -71,7 +94,6 @@ process kraken {
     script:
     """
         kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
-            --use-names \
             --report "${sampleName}.krpt" \
             --output "${sampleName}.kraken" \
             ${readsFiles}
@@ -79,11 +101,13 @@ process kraken {
 
 }
 
+// Pull the viral reads and any unclassified reads from the original reads
+// files for futher downstream processing using KrakenTools
 process filterreads {
     conda 'bioconda::krakentools'
 
     input:
-        set val(devnull), file(readsFiles) from KrakenInputReads
+        file(readsFiles) from KrakenInputReads
         set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
 
     output:
@@ -104,6 +128,8 @@ process filterreads {
 
 }
 
+// Convert the kraken reports to krona input files using KrakenTools then
+// prettify them using unix tools
 process kraken2krona {
     conda 'bioconda::krakentools'
 
@@ -116,18 +142,29 @@ process kraken2krona {
     shell:
     '''
         #!/bin/bash
+        # Using bash-specific loop syntax here, so shebang is required
+
+        # Convert the report using KrakenTools
         kreport2krona.py -r !{krakenReport} -o !{sampleName}.krona
+
+        # KrakenTools creates ugly x__ prefixes for each of the taxonomic levels:
+        # let's remove each of those
         LEVELS=(d k p c o f g s)
         for L in "${LEVELS[@]}"; do
             sed -i "s/${L}__//g" !{sampleName}.krona
         done
+
+        # Also remove underscores that are standing in place of spaces
         sed -i "s/_/ /g" !{sampleName}.krona
     '''
 }
 
+// Collect all of the krona input files and convert them to a single graphical
+// webpage to ship to the user
 process krona {
     conda 'bioconda::krona'
 
+    // This is a final step: publish it
     publishDir OutFolder, mode: 'move'
 
     input:
@@ -136,6 +173,8 @@ process krona {
     output:
         file("${RunName}.html") into KronaWebPage
 
+    // Name the file using the run name, and name the top level taxa as 'root'
+    // consistent with kraken
     script:
     """
         ktImportText * -o ${RunName}.html -n root
