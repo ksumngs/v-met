@@ -8,6 +8,8 @@
                             adjusted on a per-process basic. Defaults to 4
     --krakendb          The storage location of the Kraken2 database. Defaults
                             to /kraken2-db
+    --blastdb           The storage location of the NCBI BLAST database.
+                            Defaults to /blastdb
     --runname           A friendly identifier to describe the samples being
                             analyzed. Defaults to 'viral-metagenomics'
     --outfolder         The place where the final anlysis products will be
@@ -17,12 +19,14 @@ params.readsfolder = "."
 params.threads = 4
 params.outfolder = ""
 params.krakendb = "/kraken2-db"
+params.blastdb = "/blastdb"
 params.runname = "viral-metagenomics"
 
 // Make params persist that need to
 NumThreads = params.threads
 KrakenDb = params.krakendb
 RunName = params.runname
+BlastDb = params.blastdb
 
 // Create an outfolder name if one wasn't provided
 if(params.outfolder == "") {
@@ -179,6 +183,70 @@ process krona {
     """
         ktImportText * -o ${RunName}.html -n root
     """
+}
+
+process fastq2fasta {
+    conda 'conda-forge::julia'
+
+    input:
+        set val(sampleName), file(readsFiles) from FilteredReads
+
+    output:
+        tuple sampleName, file("${sampleName}.fasta") into FastaReads
+
+    """
+    #!/usr/bin/env julia
+
+    # Install the FASTX package
+    using Pkg
+    Pkg.add("FASTX")
+    Pkg.add("CodecZlib")
+
+    using FASTX
+    using CodecZlib
+    # Copied from https://github.com/BioJulia/FASTX.jl/issues/50
+    r = FASTQ.Reader(GzipDecompressorStream(open("${readsFiles[0]}", "r")))
+    w = FASTA.Writer(open("${sampleName}.fasta", "w"))
+    for record in r
+        seq = FASTQ.sequence(record)
+        id = FASTQ.identifier(record)
+        record_fasta = FASTA.Record(id, seq)
+        write(w, record_fasta)
+    end
+    close(r)
+    r = FASTQ.Reader(GzipDecompressorStream(open("${readsFiles[1]}", "r")))
+    for record in r
+        seq = FASTQ.sequence(record)
+        id = FASTQ.identifier(record)
+        record_fasta = FASTA.Record(id, seq)
+        write(w, record_fasta)
+    end
+    close(w)
+    """
+}
+
+process blast {
+    // This is a final step: publish it
+    publishDir OutFolder, mode: 'copy'
+
+    input:
+        set val(sampleName), file(readsFiles) from FastaReads
+
+    output:
+        file("${RunName}_${sampleName}.blast.tsv")
+
+    script:
+    """
+        blastn -query ${readsFiles} \
+               -db ${BlastDb} \
+               -max_hsps 5 \
+               -num_alignments 5 \
+               -outfmt "6 qseqid staxids sseqid stitle sscinames scomnames pident length mismatch gapopen qstart qend sstart send evalue bitscore" \
+               -evalue 1e-5 \
+               -num_threads ${NumThreads} \
+               -out ${RunName}_${sampleName}.blast.tsv
+    """
+
 }
 
 /*
