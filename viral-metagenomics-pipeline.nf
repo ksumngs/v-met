@@ -21,6 +21,8 @@ params.outfolder = ""
 params.krakendb = "/kraken2-db"
 params.blastdb = "/blastdb"
 params.runname = "viral-metagenomics"
+params.dev = false
+params.devinputs = 2
 
 // Make params persist that need to
 NumThreads = params.threads
@@ -39,6 +41,7 @@ else {
 // Bring in the reads files
 Channel
     .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.{gz,bz,bz2}")
+    .take( params.dev ? params.devinputs : -1 )
     .set{ RawReads }
 
 // First trim, using Trimmomatic
