@@ -191,11 +191,14 @@ process krona {
 process fastq2fasta {
     conda 'conda-forge::julia'
 
+    // Dr. Palinski asked for reads: publish this step
+    publishDir OutFolder, mode: 'copy'
+
     input:
         set val(sampleName), file(readsFiles) from FilteredReads
 
     output:
-        tuple sampleName, file("${sampleName}.fasta") into FastaReads
+        tuple sampleName, file("${sampleName}_unclassified.fasta") into FastaReads
 
     """
     #!/usr/bin/env julia
@@ -209,7 +212,7 @@ process fastq2fasta {
     using CodecZlib
     # Copied from https://github.com/BioJulia/FASTX.jl/issues/50
     r = FASTQ.Reader(GzipDecompressorStream(open("${readsFiles[0]}", "r")))
-    w = FASTA.Writer(open("${sampleName}.fasta", "w"))
+    w = FASTA.Writer(open("${sampleName}_unclassified.fasta", "w"))
     for record in r
         seq = FASTQ.sequence(record)
         id = FASTQ.identifier(record)
