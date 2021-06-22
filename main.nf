@@ -189,8 +189,6 @@ process krona {
 }
 
 process fastq2fasta {
-    conda 'conda-forge::julia'
-
     // Dr. Palinski asked for reads: publish this step
     publishDir OutFolder, mode: 'copy'
 
