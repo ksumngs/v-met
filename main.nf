@@ -198,34 +198,9 @@ process fastq2fasta {
     output:
         tuple sampleName, file("${sampleName}_unclassified.fasta") into FastaReads
 
+    script:
     """
-    #!/usr/bin/env julia
-
-    # Install the FASTX package
-    using Pkg
-    Pkg.add("FASTX")
-    Pkg.add("CodecZlib")
-
-    using FASTX
-    using CodecZlib
-    # Copied from https://github.com/BioJulia/FASTX.jl/issues/50
-    r = FASTQ.Reader(GzipDecompressorStream(open("${readsFiles[0]}", "r")))
-    w = FASTA.Writer(open("${sampleName}_unclassified.fasta", "w"))
-    for record in r
-        seq = FASTQ.sequence(record)
-        id = FASTQ.identifier(record)
-        record_fasta = FASTA.Record(id, seq)
-        write(w, record_fasta)
-    end
-    close(r)
-    r = FASTQ.Reader(GzipDecompressorStream(open("${readsFiles[1]}", "r")))
-    for record in r
-        seq = FASTQ.sequence(record)
-        id = FASTQ.identifier(record)
-        record_fasta = FASTA.Record(id, seq)
-        write(w, record_fasta)
-    end
-    close(w)
+        interleave_fastq_to_fasta.jl "${readsFiles[0]}" "${readsFiles[1]}" "${sampleName}_unclassified.fasta"
     """
 }
 
