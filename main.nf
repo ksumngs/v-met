@@ -99,6 +99,14 @@ process kraken {
         tuple sampleName, file("${sampleName}.krpt") into KrakenVisuals
 
     script:
+    if ( params.dev )
+    """
+        kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired --quick \
+            --report "${sampleName}.krpt" \
+            --output "${sampleName}.kraken" \
+            ${readsFiles}
+    """
+    else
     """
         kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
             --report "${sampleName}.krpt" \
@@ -215,6 +223,19 @@ process blast {
         file("${RunName}_${sampleName}.blast.tsv")
 
     script:
+    if ( params.dev )
+    """
+        echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}.blast.tsv
+        blastn -query ${readsFiles} \
+               -db ${BlastDb}/nt \
+               -max_hsps 1 \
+               -num_alignments 1 \
+               -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+               -evalue 1e-5 \
+               -num_threads ${NumThreads} \
+               -task megablast >> ${RunName}_${sampleName}.blast.tsv
+    """
+    else
     """
         echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}.blast.tsv
         blastn -query ${readsFiles} \
