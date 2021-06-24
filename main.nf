@@ -54,14 +54,14 @@ process trimmomatic {
 
         script:
         """
-            # Very generic trimmomatic settings, except that unpaired reads are discarded
-            trimmomatic PE -threads ${NumThreads} \
-                ${readsFiles} \
-                ${sampleName}_trimmomatic_R1.fastq.gz \
-                /dev/null \
-                ${sampleName}_trimmomatic_R2.fastq.gz \
-                /dev/null \
-                ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+        # Very generic trimmomatic settings, except that unpaired reads are discarded
+        trimmomatic PE -threads ${NumThreads} \
+            ${readsFiles} \
+            ${sampleName}_trimmomatic_R1.fastq.gz \
+            /dev/null \
+            ${sampleName}_trimmomatic_R2.fastq.gz \
+            /dev/null \
+            ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
         """
 }
 
@@ -81,11 +81,11 @@ process seqpurge {
 
     script:
     """
-        SeqPurge -threads ${NumThreads} \
-            -in1  ${readsFiles[0]} \
-            -in2  ${readsFiles[1]} \
-            -out1 ${sampleName}_seqpurge_R1.fastq.gz \
-            -out2 ${sampleName}_seqpurge_R2.fastq.gz
+    SeqPurge -threads ${NumThreads} \
+        -in1  ${readsFiles[0]} \
+        -in2  ${readsFiles[1]} \
+        -out1 ${sampleName}_seqpurge_R1.fastq.gz \
+        -out2 ${sampleName}_seqpurge_R2.fastq.gz
     """
 }
 
@@ -101,17 +101,17 @@ process kraken {
     script:
     if ( params.dev )
     """
-        kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired --quick \
-            --report "${sampleName}.krpt" \
-            --output "${sampleName}.kraken" \
-            ${readsFiles}
+    kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired --quick \
+        --report "${sampleName}.krpt" \
+        --output "${sampleName}.kraken" \
+        ${readsFiles}
     """
     else
     """
-        kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
-            --report "${sampleName}.krpt" \
-            --output "${sampleName}.kraken" \
-            ${readsFiles}
+    kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
+        --report "${sampleName}.krpt" \
+        --output "${sampleName}.kraken" \
+        ${readsFiles}
     """
 
 }
@@ -132,13 +132,13 @@ process filterreads {
     // and 10239 is viral reads
     script:
     """
-        extract_kraken_reads.py -k ${krakenFile} \
+    extract_kraken_reads.py -k ${krakenFile} \
         -s1 ${readsFiles[0]} -s2 ${readsFiles[1]} \
         -r ${krakenReport} \
         -t 0 10239 --include-children \
         --fastq-output \
         -o ${sampleName}_filtered_R1.fastq -o2 ${sampleName}_filtered_R2.fastq
-        gzip ${sampleName}_filtered_{R1,R2}.fastq
+    gzip ${sampleName}_filtered_{R1,R2}.fastq
     """
 
 }
@@ -156,21 +156,21 @@ process kraken2krona {
 
     shell:
     '''
-        #!/bin/bash
-        # Using bash-specific loop syntax here, so shebang is required
+    #!/bin/bash
+    # Using bash-specific loop syntax here, so shebang is required
 
-        # Convert the report using KrakenTools
-        kreport2krona.py -r !{krakenReport} -o !{sampleName}.krona
+    # Convert the report using KrakenTools
+    kreport2krona.py -r !{krakenReport} -o !{sampleName}.krona
 
-        # KrakenTools creates ugly x__ prefixes for each of the taxonomic levels:
-        # let's remove each of those
-        LEVELS=(d k p c o f g s)
-        for L in "${LEVELS[@]}"; do
-            sed -i "s/${L}__//g" !{sampleName}.krona
-        done
+    # KrakenTools creates ugly x__ prefixes for each of the taxonomic levels:
+    # let's remove each of those
+    LEVELS=(d k p c o f g s)
+    for L in "${LEVELS[@]}"; do
+        sed -i "s/${L}__//g" !{sampleName}.krona
+    done
 
-        # Also remove underscores that are standing in place of spaces
-        sed -i "s/_/ /g" !{sampleName}.krona
+    # Also remove underscores that are standing in place of spaces
+    sed -i "s/_/ /g" !{sampleName}.krona
     '''
 }
 
@@ -192,7 +192,7 @@ process krona {
     // consistent with kraken
     script:
     """
-        ktImportText * -o ${RunName}.html -n root
+    ktImportText * -o ${RunName}.html -n root
     """
 }
 
@@ -208,7 +208,7 @@ process fastq2fasta {
 
     script:
     """
-        interleave_fastq_to_fasta.jl "${readsFiles[0]}" "${readsFiles[1]}" "${sampleName}_unclassified.fasta"
+    interleave_fastq_to_fasta.jl "${readsFiles[0]}" "${readsFiles[1]}" "${sampleName}_unclassified.fasta"
     """
 }
 
@@ -225,27 +225,27 @@ process blast {
     script:
     if ( params.dev )
     """
-        echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}.blast.tsv
-        blastn -query ${readsFiles} \
-               -db ${BlastDb}/nt \
-               -max_hsps 1 \
-               -num_alignments 1 \
-               -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-               -evalue 1e-5 \
-               -num_threads ${NumThreads} \
-               -task megablast >> ${RunName}_${sampleName}.blast.tsv
+    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}.blast.tsv
+    blastn -query ${readsFiles} \
+            -db ${BlastDb}/nt \
+            -max_hsps 1 \
+            -num_alignments 1 \
+            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+            -evalue 1e-5 \
+            -num_threads ${NumThreads} \
+            -task megablast >> ${RunName}_${sampleName}.blast.tsv
     """
     else
     """
-        echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}.blast.tsv
-        blastn -query ${readsFiles} \
-               -db ${BlastDb}/nt \
-               -max_hsps 10 \
-               -num_alignments 5 \
-               -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-               -evalue 1e-5 \
-               -num_threads ${NumThreads} \
-               -task blastn >> ${RunName}_${sampleName}.blast.tsv
+    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}.blast.tsv
+    blastn -query ${readsFiles} \
+            -db ${BlastDb}/nt \
+            -max_hsps 10 \
+            -num_alignments 5 \
+            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+            -evalue 1e-5 \
+            -num_threads ${NumThreads} \
+            -task blastn >> ${RunName}_${sampleName}.blast.tsv
     """
 
 }
