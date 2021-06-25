@@ -196,24 +196,6 @@ process krona {
     """
 }
 
-/*
-process fastq2fasta {
-    // Dr. Palinski asked for reads: publish this step
-    publishDir OutFolder, mode: 'copy'
-
-    input:
-        set val(sampleName), file(readsFiles) from FilteredReads
-
-    output:
-        tuple sampleName, file("${sampleName}_unclassified.fasta") into FastaReads
-
-    script:
-    """
-    interleave_fastq_to_fasta.jl "${readsFiles[0]}" "${readsFiles[1]}" "${sampleName}_unclassified.fasta"
-    """
-}
-*/
-
 process ray {
     input:
         set val(sampleName), file(readsFiles) from FilteredReads
