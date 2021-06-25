@@ -196,6 +196,7 @@ process krona {
     """
 }
 
+/*
 process fastq2fasta {
     // Dr. Palinski asked for reads: publish this step
     publishDir OutFolder, mode: 'copy'
@@ -211,13 +212,29 @@ process fastq2fasta {
     interleave_fastq_to_fasta.jl "${readsFiles[0]}" "${readsFiles[1]}" "${sampleName}_unclassified.fasta"
     """
 }
+*/
+
+process ray {
+    input:
+        set val(sampleName), file(readsFiles) from FilteredReads
+
+    output:
+        tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs
+        tuple val(sampleName), file("RayOutput/Scaffolds.fasta") into RayScaffolds
+
+    script:
+    """
+    mpiexec -n ${NumThreads} Ray -p ${readsFiles}
+    """
+
+}
 
 process blast {
     // This is a final step: publish it
     publishDir OutFolder, mode: 'copy'
 
     input:
-        set val(sampleName), file(readsFiles) from FastaReads
+        set val(sampleName), file(readsFiles) from RayContigs
 
     output:
         file("${RunName}_${sampleName}.blast.tsv")
@@ -249,20 +266,3 @@ process blast {
     """
 
 }
-
-/*
-process ray {
-    input:
-        set val(sampleName), file(readsFiles) from FilteredReads
-
-    output:
-        tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs
-        tuple val(sampleName), file("RayOutput/Scaffolds.fasta") into RayScaffolds
-
-    script:
-    """
-        mpiexec -n ${NumThreads} Ray -p ${readsFiles}
-    """
-
-}
-*/
