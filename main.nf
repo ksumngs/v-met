@@ -172,7 +172,7 @@ process krona {
     file '*' from KronaText.collect()
 
     output:
-    file("${RunName}.html") into KronaWebPage
+    file("${RunName}.html")
 
     // Name the file using the run name, and name the top level taxa as 'root'
     // consistent with kraken
@@ -189,7 +189,6 @@ process ray {
 
     output:
     tuple val(sampleName), val(assembler), 'RayOutput/Contigs.fasta' into RayContigs
-    tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs1
 
     script:
     assembler = 'ray'
@@ -206,7 +205,6 @@ process iva {
 
     output:
     tuple val(sampleName), val(assembler), 'contigs.fasta' into IVAContigs
-    tuple val(sampleName), file("contigs.fasta") into IVAContigs1
 
     script:
     assembler = 'iva'
