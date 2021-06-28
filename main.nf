@@ -203,6 +203,7 @@ process ray {
 
     output:
         tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs
+        tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs1
         tuple val(sampleName), file("RayOutput/Scaffolds.fasta") into RayScaffolds
 
     script:
@@ -212,21 +213,21 @@ process ray {
 
 }
 
-process iva {
-    input:
-        set val(sampleName), file(readsFiles) from FilteredReads2
+// process iva {
+//     input:
+//         set val(sampleName), file(readsFiles) from FilteredReads2
 
-    output:
-        tuple val(sampleName), file("contigs.fasta") into IVAContigs
+//     output:
+//         tuple val(sampleName), file("contigs.fasta") into IVAContigs
 
-    script:
-    """
-    iva -t ${NumThreads} -f ${readsFiles[0]} -r ${readsFiles[1]} out
-    mv out/contigs.fasta .
-    """
-}
+//     script:
+//     """
+//     iva -t ${NumThreads} -f ${readsFiles[0]} -r ${readsFiles[1]} out
+//     mv out/contigs.fasta .
+//     """
+// }
 
-process blastray {
+process blastnray {
     // This is a final step: publish it
     publishDir OutFolder, mode: 'copy'
 
@@ -234,12 +235,12 @@ process blastray {
         set val(sampleName), file(readsFiles) from RayContigs
 
     output:
-        file("${RunName}_${sampleName}_ray.blast.tsv")
+        file("${RunName}_${sampleName}_ray.blastn.tsv")
 
     script:
     if ( params.dev )
     """
-    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blast.tsv
+    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastn.tsv
     blastn -query ${readsFiles} \
             -db ${BlastDb}/nt \
             -max_hsps 1 \
@@ -247,11 +248,11 @@ process blastray {
             -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
             -evalue 1e-5 \
             -num_threads ${NumThreads} \
-            -task megablast >> ${RunName}_${sampleName}_ray.blast.tsv
+            -task megablast >> ${RunName}_${sampleName}_ray.blastn.tsv
     """
     else
     """
-    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blast.tsv
+    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastn.tsv
     blastn -query ${readsFiles} \
             -db ${BlastDb}/nt \
             -max_hsps 10 \
@@ -259,45 +260,83 @@ process blastray {
             -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
             -evalue 1e-5 \
             -num_threads ${NumThreads} \
-            -task blastn >> ${RunName}_${sampleName}_ray.blast.tsv
+            -task blastn >> ${RunName}_${sampleName}_ray.blastn.tsv
     """
 
 }
 
-process blastiva {
+process blastxray {
     // This is a final step: publish it
     publishDir OutFolder, mode: 'copy'
 
     input:
-        set val(sampleName), file(readsFiles) from IVAContigs
+        set val(sampleName), file(readsFiles) from RayContigs1
 
     output:
-        file("${RunName}_${sampleName}_iva.blast.tsv")
+        file("${RunName}_${sampleName}_ray.blastx.tsv")
 
     script:
     if ( params.dev )
     """
-    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > "${RunName}_${sampleName}_iva.blast.tsv"
-    blastn -query ${readsFiles} \
-            -db ${BlastDb}/nt \
+    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastx.tsv
+    blastx -query ${readsFiles} \
+            -db ${BlastDb}/nr \
             -max_hsps 1 \
             -num_alignments 1 \
             -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
             -evalue 1e-5 \
             -num_threads ${NumThreads} \
-            -task megablast >> ${RunName}_${sampleName}_iva.blast.tsv
+            -task blastx-fast >> ${RunName}_${sampleName}_ray.blastx.tsv
     """
     else
     """
-    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > "${RunName}_${sampleName}_iva.blast.tsv"
-    blastn -query ${readsFiles} \
-            -db ${BlastDb}/nt \
+    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastx.tsv
+    blastx -query ${readsFiles} \
+            -db ${BlastDb}/nr \
             -max_hsps 10 \
             -num_alignments 5 \
             -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
             -evalue 1e-5 \
             -num_threads ${NumThreads} \
-            -task blastn >> ${RunName}_${sampleName}_iva.blast.tsv
+            -task blastn >> ${RunName}_${sampleName}_ray.blastx.tsv
     """
 
 }
+
+// process blastiva {
+//     // This is a final step: publish it
+//     publishDir OutFolder, mode: 'copy'
+
+//     input:
+//         set val(sampleName), file(readsFiles) from IVAContigs
+
+//     output:
+//         file("${RunName}_${sampleName}_iva.blast.tsv")
+
+//     script:
+//     if ( params.dev )
+//     """
+//     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > "${RunName}_${sampleName}_iva.blast.tsv"
+//     blastn -query ${readsFiles} \
+//             -db ${BlastDb}/nt \
+//             -max_hsps 1 \
+//             -num_alignments 1 \
+//             -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+//             -evalue 1e-5 \
+//             -num_threads ${NumThreads} \
+//             -task megablast >> ${RunName}_${sampleName}_iva.blast.tsv
+//     """
+//     else
+//     """
+//     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > "${RunName}_${sampleName}_iva.blast.tsv"
+//     blastn -query ${readsFiles} \
+//             -db ${BlastDb}/nt \
+//             -max_hsps 10 \
+//             -num_alignments 5 \
+//             -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+//             -evalue 1e-5 \
+//             -num_threads ${NumThreads} \
+//             -task blastn >> ${RunName}_${sampleName}_iva.blast.tsv
+//     """
+
+// }
