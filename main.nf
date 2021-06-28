@@ -41,7 +41,7 @@ else {
 
 // Bring in the reads files
 Channel
-    .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.{gz,bz,bz2}")
+    .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.gz")
     .take( params.dev ? params.devinputs : -1 )
     .set{ RawReads }
 
@@ -51,7 +51,7 @@ process trimmomatic {
     set val(sampleName), file(readsFiles) from RawReads
 
     output:
-    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into OnceTrimmedReads
+    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into IntermediateTrimmedReads
 
     script:
     """
@@ -69,14 +69,14 @@ process trimmomatic {
 // Secord trim, using SeqPurge
 process seqpurge {
     input:
-    set val(sampleName), file(readsFiles) from OnceTrimmedReads
+    set val(sampleName), file(readsFiles) from IntermediateTrimmedReads
 
     // These trimmed reads start a branching path:
     // First branch: get classified by Kraken and produce visuals
     // Secord branch: based on classification, go to de novo assembly
     output:
-    tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into TwiceTrimmedReads
-    file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into KrakenInputReads
+    tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into FullyTrimmedReads
+    file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into PreKrakenReads
 
     script:
     """
@@ -91,7 +91,7 @@ process seqpurge {
 // Classify reads using Kraken
 process kraken {
     input:
-    set val(sampleName), file(readsFiles) from TwiceTrimmedReads
+    set val(sampleName), file(readsFiles) from FullyTrimmedReads
 
     output:
     tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
@@ -111,13 +111,13 @@ process kraken {
 // files for futher downstream processing using KrakenTools
 process filterreads {
     input:
-    file(readsFiles) from KrakenInputReads
+    file(readsFiles) from PreKrakenReads
     set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
 
     output:
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads2
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads3
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForA5
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
     // and 10239 is viral reads
@@ -186,7 +186,7 @@ process krona {
 // Assemble into contigs using Ray
 process ray {
     input:
-    set val(sampleName), file(readsFiles) from FilteredReads
+    set val(sampleName), file(readsFiles) from ReadsForRay
 
     output:
     tuple val(sampleName), val(assembler), 'RayOutput/Contigs.fasta' into RayContigs
@@ -202,7 +202,7 @@ process ray {
 // Assemble into contigs using iva
 process iva {
     input:
-    set val(sampleName), file(readsFiles) from FilteredReads2
+    set val(sampleName), file(readsFiles) from ReadsForIVA
 
     output:
     tuple val(sampleName), val(assembler), 'contigs.fasta' into IVAContigs
@@ -218,7 +218,7 @@ process iva {
 // Assemble into contigs using a5
 process a5 {
     input:
-    set val(sampleName), file(readsFiles) from FilteredReads3
+    set val(sampleName), file(readsFiles) from ReadsForA5
 
     output:
     tuple val(sampleName), val(assembler), "${sampleName}.contigs.fasta" into A5Contigs
