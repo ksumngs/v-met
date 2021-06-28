@@ -98,21 +98,13 @@ process kraken {
     tuple sampleName, file("${sampleName}.krpt") into KrakenVisuals
 
     script:
-    if ( params.dev )
+    quickflag = params.dev ? '--quick' : ''
     """
-    kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired --quick \
+    kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired ${quickflag} \
         --report "${sampleName}.krpt" \
         --output "${sampleName}.kraken" \
         ${readsFiles}
     """
-    else
-    """
-    kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired \
-        --report "${sampleName}.krpt" \
-        --output "${sampleName}.kraken" \
-        ${readsFiles}
-    """
-
 }
 
 // Pull the viral reads and any unclassified reads from the original reads
