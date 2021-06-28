@@ -117,6 +117,7 @@ process filterreads {
     output:
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads2
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads3
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
     // and 10239 is viral reads
@@ -214,6 +215,21 @@ process iva {
     """
 }
 
+// Assemble into contigs using a5
+process a5 {
+    input:
+    set val(sampleName), file(readsFiles) from FilteredReads3
+
+    output:
+    tuple val(sampleName), val(assembler), "${sampleName}.contigs.fasta" into A5Contigs
+
+    script:
+    assembler = 'a5'
+    """
+    a5_pipeline.pl --threads ${NumThreads} ${readsFiles} ${sampleName}
+    """
+}
+
 // Blast contigs
 process blast {
     // This is a final step: publish it
@@ -222,7 +238,7 @@ process blast {
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), val(assembler), file(readsFiles) from RayContigs.concat(IVAContigs)
+    set val(sampleName), val(assembler), file(readsFiles) from RayContigs.concat(IVAContigs, A5Contigs)
     each program from BlastAlgorithms
 
     output:
