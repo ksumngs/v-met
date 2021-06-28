@@ -29,6 +29,7 @@ NumThreads = params.threads
 KrakenDb = params.krakendb
 RunName = params.runname
 BlastDb = params.blastdb
+BlastAlgorithms = ['blastn', 'blastx']
 
 // Create an outfolder name if one wasn't provided
 if(params.outfolder == "") {
@@ -223,118 +224,46 @@ process iva {
     """
 }
 
-// Blast ray's contigs
-process blastn {
+// Blast contigs
+process blast {
     // This is a final step: publish it
     publishDir OutFolder, mode: 'copy'
 
+    // Blast needs to happen on all contigs from all assemblers, and both
+    // blastn and blastx needs to be applied to all contigs
     input:
     set val(sampleName), val(assembler), file(readsFiles) from RayContigs.concat(IVAContigs)
+    each program from BlastAlgorithms
 
     output:
-    file("${RunName}_${sampleName}_${assembler}.blastn.tsv")
+    file("${RunName}_${sampleName}_${assembler}.${program}.tsv")
 
     script:
-    if ( params.dev )
-    """
-    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_${assembler}.blastn.tsv
-    blastn -query ${readsFiles} \
-        -db ${BlastDb}/nt \
-        -max_hsps 1 \
-        -num_alignments 1 \
-        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-        -evalue 1e-5 \
-        -num_threads ${NumThreads} \
-        -task megablast >> ${RunName}_${sampleName}_${assembler}.blastn.tsv
-    """
-    else
-    """
-    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_${assembler}.blastn.tsv
-    blastn -query ${readsFiles} \
-        -db ${BlastDb}/nt \
-        -max_hsps 10 \
-        -num_alignments 5 \
-        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-        -evalue 1e-5 \
-        -num_threads ${NumThreads} \
-        -task blastn >> ${RunName}_${sampleName}_${assembler}.blastn.tsv
-    """
+    // Pick the faster algorithm if this is a development cycle, otherwise
+    // the titular program is also the name of the algorithm
+    algorithm = program
+    if ( params.dev ) {
+        algorithm = ( program == 'blastn' ) ? 'megablast' : 'blastx-fast'
+    }
 
+    // Switch which database to read from
+    dbExtension = (program == 'blastn') ? 'nt' : 'nr'
+
+    // Take only first hits if this is a development cycle
+    maxhsps = params.dev ? 1 : 10
+    nalignments = params.dev ? 1 : 5
+
+    // Squash the filename into a single variable
+    outFile = "${RunName}_${sampleName}_${assembler}.${program}.tsv"
+    """
+    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
+    ${program} -query ${readsFiles} \
+        -db ${BlastDb}/${dbExtension} \
+        -max_hsps ${maxhsps} \
+        -num_alignments ${nalignments} \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task ${algorithm} >> ${outFile}
+    """
 }
-
-// // Blast ray's contig translations
-// process blastxray {
-//     // This is a final step: publish it
-//     publishDir OutFolder, mode: 'copy'
-
-//     input:
-//         set val(sampleName), file(readsFiles) from RayContigs1
-
-//     output:
-//         file("${RunName}_${sampleName}_ray.blastx.tsv")
-
-//     script:
-//     if ( params.dev )
-//     """
-//     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastx.tsv
-//     blastx -query ${readsFiles} \
-//         -db ${BlastDb}/nr \
-//         -max_hsps 1 \
-//         -num_alignments 1 \
-//         -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-//         -evalue 1e-5 \
-//         -num_threads ${NumThreads} \
-//         -task blastx-fast >> ${RunName}_${sampleName}_ray.blastx.tsv
-//     """
-//     else
-//     """
-//     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastx.tsv
-//     blastx -query ${readsFiles} \
-//         -db ${BlastDb}/nr \
-//         -max_hsps 10 \
-//         -num_alignments 5 \
-//         -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-//         -evalue 1e-5 \
-//         -num_threads ${NumThreads} \
-//         -task blastn >> ${RunName}_${sampleName}_ray.blastx.tsv
-//     """
-
-// }
-
-// process blastxiva {
-//     // This is a final step: publish it
-//     publishDir OutFolder, mode: 'copy'
-
-//     input:
-//         set val(sampleName), file(readsFiles) from IVAContigs1
-
-//     output:
-//         file("${RunName}_${sampleName}_iva.blastx.tsv")
-
-//     script:
-//     if ( params.dev )
-//     """
-//     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_iva.blastx.tsv
-//     blastx -query ${readsFiles} \
-//         -db ${BlastDb}/nr \
-//         -max_hsps 1 \
-//         -num_alignments 1 \
-//         -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-//         -evalue 1e-5 \
-//         -num_threads ${NumThreads} \
-//         -task blastx-fast >> ${RunName}_${sampleName}_iva.blastx.tsv
-//     """
-//     else
-//     """
-//     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_iva.blastx.tsv
-//     blastx -query ${readsFiles} \
-//         -db ${BlastDb}/nr \
-//         -max_hsps 10 \
-//         -num_alignments 5 \
-//         -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-//         -evalue 1e-5 \
-//         -num_threads ${NumThreads} \
-//         -task blastn >> ${RunName}_${sampleName}_iva.blastx.tsv
-//     """
-
-// }
