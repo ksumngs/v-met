@@ -47,35 +47,35 @@ Channel
 // First trim, using Trimmomatic
 process trimmomatic {
     input:
-        set val(sampleName), file(readsFiles) from RawReads
+    set val(sampleName), file(readsFiles) from RawReads
 
     output:
-        tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into OnceTrimmedReads
+    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into OnceTrimmedReads
 
-        script:
-        """
-        # Very generic trimmomatic settings, except that unpaired reads are discarded
-        trimmomatic PE -threads ${NumThreads} \
-            ${readsFiles} \
-            ${sampleName}_trimmomatic_R1.fastq.gz \
-            /dev/null \
-            ${sampleName}_trimmomatic_R2.fastq.gz \
-            /dev/null \
-            ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
-        """
+    script:
+    """
+    # Very generic trimmomatic settings, except that unpaired reads are discarded
+    trimmomatic PE -threads ${NumThreads} \
+        ${readsFiles} \
+        ${sampleName}_trimmomatic_R1.fastq.gz \
+        /dev/null \
+        ${sampleName}_trimmomatic_R2.fastq.gz \
+        /dev/null \
+        ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+    """
 }
 
 // Secord trim, using SeqPurge
 process seqpurge {
     input:
-        set val(sampleName), file(readsFiles) from OnceTrimmedReads
+    set val(sampleName), file(readsFiles) from OnceTrimmedReads
 
     // These trimmed reads start a branching path:
     // First branch: get classified by Kraken and produce visuals
     // Secord branch: based on classification, go to de novo assembly
     output:
-        tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into TwiceTrimmedReads
-        file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into KrakenInputReads
+    tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into TwiceTrimmedReads
+    file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into KrakenInputReads
 
     script:
     """
@@ -90,11 +90,11 @@ process seqpurge {
 // Classify reads using Kraken
 process kraken {
     input:
-        set val(sampleName), file(readsFiles) from TwiceTrimmedReads
+    set val(sampleName), file(readsFiles) from TwiceTrimmedReads
 
     output:
-        tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
-        tuple sampleName, file("${sampleName}.krpt") into KrakenVisuals
+    tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
+    tuple sampleName, file("${sampleName}.krpt") into KrakenVisuals
 
     script:
     if ( params.dev )
@@ -118,12 +118,12 @@ process kraken {
 // files for futher downstream processing using KrakenTools
 process filterreads {
     input:
-        file(readsFiles) from KrakenInputReads
-        set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
+    file(readsFiles) from KrakenInputReads
+    set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
 
     output:
-        tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads
-        tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads2
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads2
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
     // and 10239 is viral reads
@@ -144,10 +144,10 @@ process filterreads {
 // prettify them using unix tools
 process kraken2krona {
     input:
-        set val(sampleName), file(krakenReport) from KrakenVisuals
+    set val(sampleName), file(krakenReport) from KrakenVisuals
 
     output:
-        file("${sampleName}.krona") into KronaText
+    file("${sampleName}.krona") into KronaText
 
     shell:
     '''
@@ -176,10 +176,10 @@ process krona {
     publishDir OutFolder, mode: 'move'
 
     input:
-        file '*' from KronaText.collect()
+    file '*' from KronaText.collect()
 
     output:
-        file("${RunName}.html") into KronaWebPage
+    file("${RunName}.html") into KronaWebPage
 
     // Name the file using the run name, and name the top level taxa as 'root'
     // consistent with kraken
@@ -191,12 +191,12 @@ process krona {
 
 process ray {
     input:
-        set val(sampleName), file(readsFiles) from FilteredReads
+    set val(sampleName), file(readsFiles) from FilteredReads
 
     output:
-        tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs
-        tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs1
-        tuple val(sampleName), file("RayOutput/Scaffolds.fasta") into RayScaffolds
+    tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs
+    tuple val(sampleName), file("RayOutput/Contigs.fasta") into RayContigs1
+    tuple val(sampleName), file("RayOutput/Scaffolds.fasta") into RayScaffolds
 
     script:
     """
@@ -207,11 +207,11 @@ process ray {
 
 process iva {
     input:
-        set val(sampleName), file(readsFiles) from FilteredReads2
+    set val(sampleName), file(readsFiles) from FilteredReads2
 
     output:
-        tuple val(sampleName), file("contigs.fasta") into IVAContigs
-        tuple val(sampleName), file("contigs.fasta") into IVAContigs1
+    tuple val(sampleName), file("contigs.fasta") into IVAContigs
+    tuple val(sampleName), file("contigs.fasta") into IVAContigs1
 
     script:
     """
@@ -225,35 +225,35 @@ process blastnray {
     publishDir OutFolder, mode: 'copy'
 
     input:
-        set val(sampleName), file(readsFiles) from RayContigs
+    set val(sampleName), file(readsFiles) from RayContigs
 
     output:
-        file("${RunName}_${sampleName}_ray.blastn.tsv")
+    file("${RunName}_${sampleName}_ray.blastn.tsv")
 
     script:
     if ( params.dev )
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastn.tsv
     blastn -query ${readsFiles} \
-            -db ${BlastDb}/nt \
-            -max_hsps 1 \
-            -num_alignments 1 \
-            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-            -evalue 1e-5 \
-            -num_threads ${NumThreads} \
-            -task megablast >> ${RunName}_${sampleName}_ray.blastn.tsv
+        -db ${BlastDb}/nt \
+        -max_hsps 1 \
+        -num_alignments 1 \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task megablast >> ${RunName}_${sampleName}_ray.blastn.tsv
     """
     else
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastn.tsv
     blastn -query ${readsFiles} \
-            -db ${BlastDb}/nt \
-            -max_hsps 10 \
-            -num_alignments 5 \
-            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-            -evalue 1e-5 \
-            -num_threads ${NumThreads} \
-            -task blastn >> ${RunName}_${sampleName}_ray.blastn.tsv
+        -db ${BlastDb}/nt \
+        -max_hsps 10 \
+        -num_alignments 5 \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task blastn >> ${RunName}_${sampleName}_ray.blastn.tsv
     """
 
 }
@@ -273,25 +273,25 @@ process blastxray {
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastx.tsv
     blastx -query ${readsFiles} \
-            -db ${BlastDb}/nr \
-            -max_hsps 1 \
-            -num_alignments 1 \
-            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-            -evalue 1e-5 \
-            -num_threads ${NumThreads} \
-            -task blastx-fast >> ${RunName}_${sampleName}_ray.blastx.tsv
+        -db ${BlastDb}/nr \
+        -max_hsps 1 \
+        -num_alignments 1 \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task blastx-fast >> ${RunName}_${sampleName}_ray.blastx.tsv
     """
     else
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_ray.blastx.tsv
     blastx -query ${readsFiles} \
-            -db ${BlastDb}/nr \
-            -max_hsps 10 \
-            -num_alignments 5 \
-            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-            -evalue 1e-5 \
-            -num_threads ${NumThreads} \
-            -task blastn >> ${RunName}_${sampleName}_ray.blastx.tsv
+        -db ${BlastDb}/nr \
+        -max_hsps 10 \
+        -num_alignments 5 \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task blastn >> ${RunName}_${sampleName}_ray.blastx.tsv
     """
 
 }
@@ -311,25 +311,25 @@ process blastniva {
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > "${RunName}_${sampleName}_iva.blastn.tsv"
     blastn -query ${readsFiles} \
-            -db ${BlastDb}/nt \
-            -max_hsps 1 \
-            -num_alignments 1 \
-            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-            -evalue 1e-5 \
-            -num_threads ${NumThreads} \
-            -task megablast >> ${RunName}_${sampleName}_iva.blastn.tsv
+        -db ${BlastDb}/nt \
+        -max_hsps 1 \
+        -num_alignments 1 \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task megablast >> ${RunName}_${sampleName}_iva.blastn.tsv
     """
     else
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > "${RunName}_${sampleName}_iva.blastn.tsv"
     blastn -query ${readsFiles} \
-            -db ${BlastDb}/nt \
-            -max_hsps 10 \
-            -num_alignments 5 \
-            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-            -evalue 1e-5 \
-            -num_threads ${NumThreads} \
-            -task blastn >> ${RunName}_${sampleName}_iva.blastn.tsv
+        -db ${BlastDb}/nt \
+        -max_hsps 10 \
+        -num_alignments 5 \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task blastn >> ${RunName}_${sampleName}_iva.blastn.tsv
     """
 
 }
@@ -349,25 +349,25 @@ process blastxiva {
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_iva.blastx.tsv
     blastx -query ${readsFiles} \
-            -db ${BlastDb}/nr \
-            -max_hsps 1 \
-            -num_alignments 1 \
-            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-            -evalue 1e-5 \
-            -num_threads ${NumThreads} \
-            -task blastx-fast >> ${RunName}_${sampleName}_iva.blastx.tsv
+        -db ${BlastDb}/nr \
+        -max_hsps 1 \
+        -num_alignments 1 \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task blastx-fast >> ${RunName}_${sampleName}_iva.blastx.tsv
     """
     else
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${RunName}_${sampleName}_iva.blastx.tsv
     blastx -query ${readsFiles} \
-            -db ${BlastDb}/nr \
-            -max_hsps 10 \
-            -num_alignments 5 \
-            -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-            -evalue 1e-5 \
-            -num_threads ${NumThreads} \
-            -task blastn >> ${RunName}_${sampleName}_iva.blastx.tsv
+        -db ${BlastDb}/nr \
+        -max_hsps 10 \
+        -num_alignments 5 \
+        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+        -evalue 1e-5 \
+        -num_threads ${NumThreads} \
+        -task blastn >> ${RunName}_${sampleName}_iva.blastx.tsv
     """
 
 }
