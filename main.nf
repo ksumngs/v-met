@@ -118,6 +118,7 @@ process filterreads {
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForA5
+    file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
     // and 10239 is viral reads
@@ -189,7 +190,8 @@ process ray {
     set val(sampleName), file(readsFiles) from ReadsForRay
 
     output:
-    tuple val(sampleName), val(assembler), 'RayOutput/Contigs.fasta' into RayContigs
+    tuple val(sampleName), val(assembler), 'RayOutput/Contigs.fasta' into RayContigsForBlast
+    tuple val(sampleName), val(assembler), 'RayOutput/Contigs.fasta' into RayContigsForRemapping
 
     script:
     assembler = 'ray'
@@ -205,7 +207,8 @@ process iva {
     set val(sampleName), file(readsFiles) from ReadsForIVA
 
     output:
-    tuple val(sampleName), val(assembler), 'contigs.fasta' into IVAContigs
+    tuple val(sampleName), val(assembler), 'contigs.fasta' into IVAContigsForBlast
+    tuple val(sampleName), val(assembler), 'contigs.fasta' into IVAContigsForRemapping
 
     script:
     assembler = 'iva'
@@ -221,7 +224,8 @@ process a5 {
     set val(sampleName), file(readsFiles) from ReadsForA5
 
     output:
-    tuple val(sampleName), val(assembler), "${sampleName}.contigs.fasta" into A5Contigs
+    tuple val(sampleName), val(assembler), "${sampleName}.contigs.fasta" into A5ContigsForBlast
+    tuple val(sampleName), val(assembler), "${sampleName}.contigs.fasta" into A5ContigsForRemapping
 
     script:
     assembler = 'a5'
@@ -238,7 +242,7 @@ process blast {
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), val(assembler), file(readsFiles) from RayContigs.concat(IVAContigs, A5Contigs)
+    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, A5ContigsForBlast)
     each program from BlastAlgorithms
 
     output:
@@ -271,5 +275,41 @@ process blast {
         -evalue 1e-5 \
         -num_threads ${NumThreads} \
         -task ${algorithm} >> ${outFile}
+    """
+}
+
+// Preprocess the read files for BWA
+process unzipreads {
+    input:
+    file(readsFiles) from CompressedReadsForRemapping
+
+    output:
+    file("*.fastq") into UncompressedReadsForRemapping
+
+    script:
+    """
+    unpigz -p ${NumThreads} -f ${readsFiles}
+    """
+}
+
+// Remap contigs using BWA
+process bwa {
+    publishDir OutFolder, mode: 'copy'
+
+    input:
+    set val(sampleName), val(assembler), file(contigs) from RayContigsForRemapping.concat(IVAContigsForRemapping, A5ContigsForRemapping)
+    file(readsFiles) from UncompressedReadsForRemapping
+
+    output:
+    file("${sampleName}_${assembler}.sam")
+
+    script:
+    """
+    bwa index ${contigs}
+    bwa aln -t ${NumThreads} ${contigs} ${readsFiles[0]} > ${sampleName}.1.sai
+    bwa aln -t ${NumThreads} ${contigs} ${readsFiles[1]} > ${sampleName}.2.sai
+    bwa sampe ${contigs} \
+        ${sampleName}.1.sai ${sampleName}.2.sai \
+        ${readsFiles} > ${sampleName}_${assembler}.sam
     """
 }
