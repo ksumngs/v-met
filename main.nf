@@ -190,13 +190,14 @@ process ray {
     set val(sampleName), file(readsFiles) from ReadsForRay
 
     output:
-    tuple val(sampleName), val(assembler), 'RayOutput/Contigs.fasta' into RayContigsForBlast
-    tuple val(sampleName), val(assembler), 'RayOutput/Contigs.fasta' into RayContigsForRemapping
+    tuple val(sampleName), val(assembler), 'Contigs.fasta' into RayContigsForBlast
+    tuple val(sampleName), val(assembler), 'Contigs.fasta' into RayContigsForRemapping
 
     script:
     assembler = 'ray'
     """
     mpiexec -n ${NumThreads} Ray -p ${readsFiles}
+    mv RayOutput/Contigs.fasta .
     """
 
 }
