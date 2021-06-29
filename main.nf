@@ -234,6 +234,42 @@ process a5 {
     """
 }
 
+// Preprocess the read files for BWA
+process unzipreads {
+    input:
+    file(readsFiles) from CompressedReadsForRemapping
+
+    output:
+    file("*.fastq") into UncompressedReadsForRemapping
+
+    script:
+    """
+    unpigz -p ${NumThreads} -f ${readsFiles}
+    """
+}
+
+// Remap contigs using BWA
+process bwa {
+    publishDir OutFolder, mode: 'copy'
+
+    input:
+    set val(sampleName), val(assembler), file(contigs) from RayContigsForRemapping.concat(IVAContigsForRemapping, A5ContigsForRemapping)
+    file(readsFiles) from UncompressedReadsForRemapping
+
+    output:
+    file("${sampleName}_${assembler}.sam")
+
+    script:
+    """
+    bwa index ${contigs}
+    bwa aln -t ${NumThreads} ${contigs} ${readsFiles[0]} > ${sampleName}.1.sai
+    bwa aln -t ${NumThreads} ${contigs} ${readsFiles[1]} > ${sampleName}.2.sai
+    bwa sampe ${contigs} \
+        ${sampleName}.1.sai ${sampleName}.2.sai \
+        ${readsFiles} > ${sampleName}_${assembler}.sam
+    """
+}
+
 // Blast contigs
 process blast {
     // This is a final step: publish it
@@ -275,41 +311,5 @@ process blast {
         -evalue 1e-5 \
         -num_threads ${NumThreads} \
         -task ${algorithm} >> ${outFile}
-    """
-}
-
-// Preprocess the read files for BWA
-process unzipreads {
-    input:
-    file(readsFiles) from CompressedReadsForRemapping
-
-    output:
-    file("*.fastq") into UncompressedReadsForRemapping
-
-    script:
-    """
-    unpigz -p ${NumThreads} -f ${readsFiles}
-    """
-}
-
-// Remap contigs using BWA
-process bwa {
-    publishDir OutFolder, mode: 'copy'
-
-    input:
-    set val(sampleName), val(assembler), file(contigs) from RayContigsForRemapping.concat(IVAContigsForRemapping, A5ContigsForRemapping)
-    file(readsFiles) from UncompressedReadsForRemapping
-
-    output:
-    file("${sampleName}_${assembler}.sam")
-
-    script:
-    """
-    bwa index ${contigs}
-    bwa aln -t ${NumThreads} ${contigs} ${readsFiles[0]} > ${sampleName}.1.sai
-    bwa aln -t ${NumThreads} ${contigs} ${readsFiles[1]} > ${sampleName}.2.sai
-    bwa sampe ${contigs} \
-        ${sampleName}.1.sai ${sampleName}.2.sai \
-        ${readsFiles} > ${sampleName}_${assembler}.sam
     """
 }
