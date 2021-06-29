@@ -168,7 +168,7 @@ process kraken2krona {
 // webpage to ship to the user
 process krona {
     // This is a final step: publish it
-    publishDir OutFolder, mode: 'move'
+    publishDir OutFolder, mode: 'copy'
 
     input:
     file '*' from KronaText.collect()
@@ -251,14 +251,12 @@ process unzipreads {
 
 // Remap contigs using BWA
 process bwa {
-    publishDir OutFolder, mode: 'copy'
-
     input:
     set val(sampleName), val(assembler), file(contigs) from RayContigsForRemapping.concat(IVAContigsForRemapping, A5ContigsForRemapping)
     file(readsFiles) from UncompressedReadsForRemapping
 
     output:
-    file("${sampleName}_${assembler}.sam")
+    tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
 
     script:
     """
@@ -268,6 +266,31 @@ process bwa {
     bwa sampe ${contigs} \
         ${sampleName}.1.sai ${sampleName}.2.sai \
         ${readsFiles} > ${sampleName}_${assembler}.sam
+    """
+}
+
+// Sort and compress the sam files for visualization
+process sortsam {
+    input:
+    set val(sampleName), val(assembler), file(contigs), file(samfile) from RemappedReads
+
+    output:
+    tuple file("${sampleName}_${assembler}.contigs.fasta"), file("${sampleName}_${assembler}.contigs.fasta.fai"), file("${sampleName}_${assembler}.bam"), file("${sampleName}_${assembler}.bam.bai")
+
+    script:
+    """
+    # Rename the contigs file to a consistent format
+    mv ${contigs} ${sampleName}_${assembler}.contigs.fasta
+
+    # Create a contigs indes
+    samtools faidx ${sampleName}_${assembler}.contigs.fasta
+
+    # Convert and sort the sam file
+    samtools view -S -b ${samfile} > sample.bam
+    samtools sort sample.bam -o ${sampleName}_${assembler}.bam
+
+    # Index the sorted bam file
+    samtools index ${sampleName}_${assembler}.bam
     """
 }
 
