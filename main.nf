@@ -8,7 +8,6 @@ SYNOPSIS
     nextflow run millironx/viral-metagenomics-pipeline
 
 OPTIONS
-
     --readsfolder
         The folder containing parired-end Illumina reads in gzipped fastq format. Defaults
         to the current directory
@@ -37,11 +36,11 @@ OPTIONS
         The number of inputs to take in when using --dev
 
 PROCESS-SPECIFIC OPTIONS
-
 Trimmomatic:
     Please see https://github.com/usadellab/Trimmomatic for full documentation and
     descriptions of the trimming steps.
-     --trimmomatic.fastaWithAdapters
+
+    --trimmomatic.fastaWithAdapters
         Passed to ILLUMINACLIP trimming step. Specifies the path to a fasta file containing
         all the adapters. Valid values are:
             'NexteraPE-PE.fa'
@@ -52,45 +51,80 @@ Trimmomatic:
         Trimmomatic documentation and ensure that the location of the adapter is available
         to the container running Trimmomatic
 
-     --trimmomatic.seedMismatches
+    --trimmomatic.seedMismatches
         Passed to ILLUMINACLIP trimming step. Specifies the maximum mismatch count which
         will still allow a full adapter match. Defaults to 2
 
-     --trimmomatic.palindromeClipThreshold
+    --trimmomatic.palindromeClipThreshold
         Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between the
         two reads must be for PE palindrome read alignment. Defaults to 30
 
-     --trimmomatic.simpleClipThreshold
+    --trimmomatic.simpleClipThreshold
         Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between any
         adapter sequence must be against a read. Defaults to 10
 
-     --trimmomatic.windowSize
+    --trimmomatic.windowSize
         Passed to SLIDINGWINDOW trimming step. Specifies the number of bases to average
         across. If used, --trimmomatic.requiredQuality must also be specified.
 
-     --trimmomatic.requiredQuality
+    --trimmomatic.requiredQuality
         Passed to the SLIDINGWINDOW trimming step. Specifies the average base quality
         required. If used, --trimmomatic.windowSize must also be specified.
 
-     --trimmomatic.leading
+    --trimmomatic.leading
         Passed to the LEADING trimming step. Specifies the minimum quality required to keep
         a base
 
-     --trimmomatic.trailing
+    --trimmomatic.trailing
         Passed to the TRAILING trimming step. Specifies the minimum quality required to keep
         a base
 
-     --trimmomatic.crop
+    --trimmomatic.crop
         Passed to the CROP trimming step. The number of bases to keep, from the start of
         the read
 
-     --trimmomatic.headcrop
+    --trimmomatic.headcrop
         Passed to the HEADCROP trimming step. The number of bases to remove from the start
         of the read
 
-     --trimmomatic.minlen
+    --trimmomatic.minlen
         Passed to the MINLEN trimming step. Specifies the minimum length of reads to
         be kept.
+
+SeqPurge:
+    See https://github.com/imgag/ngs-bits/blob/master/doc/tools/SeqPurge.md for full
+    parameter descriptions.
+    --seqpurge.a1
+        Forward adapter sequence (at least 15 bases). Defaults
+        to 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
+
+    --seqpurge.a2
+        Reverse adapter sequence (at least 15 bases). Defaults
+        to 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'
+
+    --seqpurge.match_perc
+        Minimum percentage of matching bases for sequence/adapter matches. Defaults to 80
+
+    --seqpurge.mep
+        Maximum error probability of insert and adapter matches. Defaults to 1e-6
+
+    --seqpurge.qcut
+        Quality trimming cutoff for trimming from the end of reads using a sliding window
+        approach. Set to 0 to disable. Defaults to 15
+
+    --seqpurge.qwin
+        Quality trimming window size. Defaults to 5
+
+    --seqpurge.qoff
+        Quality trimming FASTQ score offset. Defaults to 33
+
+    --seqpurge.ncut
+        Number of subsequent Ns to trimmed using a sliding window approach from the front of
+        reads. Set to 0 to disable. Defaults to 7
+
+    --seqpurge.min_len
+        Minimum read length after adapter trimming. Shorter reads are discarded. Defaults
+        to 30
 */
 
 params.readsfolder = "."
@@ -135,7 +169,7 @@ process trimmomatic {
     // Specifying Trimmomatic paramaters on the command line can sometimes wipe
     // out the IlluminaClip settings, so restore them if absent
     if ( params.trimmomatic.fastaWithAdapters == null ) {
-        params.trimmomatic.fastaWithAdapters = "NexteraPE-PE.fa"
+        params.trimmomatic.fastaWithAdapters = 'NexteraPE-PE.fa'
         params.trimmomatic.seedMismatches = 2
         params.trimmomatic.palindromeClipThreshold = 30
         params.trimmomatic.simpleClipThreshold = 10
@@ -174,10 +208,23 @@ process seqpurge {
     file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into PreKrakenReads
 
     script:
+    // Prevent clobbered parameters
+    a1 = params.seqpurge.a1 ?: 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
+    a2 = params.seqpurge.a2 ?: 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'
+    match_perc = params.seqpurge.match_perc ?: 80
+    mep = params.seqpurge.mep ?: 1e-6
+    qcut = params.seqpurge.qcut ?: 15
+    qwin = params.seqpurge.qwin ?: 5
+    qoff = params.seqpurge.qoff ?: 33
+    ncut = params.seqpurge.ncut ?: 7
+    min_len = params.seqpurge.min_len ?: 30
+
+    // Run SeqPurge
     """
     SeqPurge -threads ${NumThreads} \
-        -in1  ${readsFiles[0]} \
-        -in2  ${readsFiles[1]} \
+        -a1 ${a1} -a2 ${a2} -match_perc ${match_perc} -mep ${mep} -qcut ${qcut} \
+        -qwin ${qwin} -qoff ${qoff} -ncut ${ncut} -min_len ${min_len} -in1 \
+        ${readsFiles[0]} -in2  ${readsFiles[1]} \
         -out1 ${sampleName}_seqpurge_R1.fastq.gz \
         -out2 ${sampleName}_seqpurge_R2.fastq.gz
     """
