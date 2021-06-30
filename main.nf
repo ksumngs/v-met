@@ -174,13 +174,13 @@ process krona {
     file '*' from KronaText.collect()
 
     output:
-    file("${RunName}.html")
+    file("krona.html")
 
     // Name the file using the run name, and name the top level taxa as 'root'
     // consistent with kraken
     script:
     """
-    ktImportText * -o ${RunName}.html -n root
+    ktImportText * -o krona.html -n root
     """
 }
 
@@ -275,7 +275,7 @@ process sortsam {
     set val(sampleName), val(assembler), file(contigs), file(samfile) from RemappedReads
 
     output:
-    tuple file("${sampleName}_${assembler}.contigs.fasta"), file("${sampleName}_${assembler}.contigs.fasta.fai"), file("${sampleName}_${assembler}.bam"), file("${sampleName}_${assembler}.bam.bai")
+    tuple file("${sampleName}_${assembler}.contigs.fasta"), file("${sampleName}_${assembler}.contigs.fasta.fai"), file("${sampleName}_${assembler}.bam"), file("${sampleName}_${assembler}.bam.bai") into Assemblies
 
     script:
     """
@@ -291,6 +291,28 @@ process sortsam {
 
     # Index the sorted bam file
     samtools index ${sampleName}_${assembler}.bam
+    """
+}
+
+// Create a viewer of all the assembly files
+process assemblyview {
+    publishDir OutFolder, mode: 'copy'
+
+    input:
+    file '*' from Assemblies.collect()
+
+    output:
+    file 'index.html'
+    file 'index.js'
+    file 'package.json'
+    file 'data/*'
+
+    script:
+    """
+    mkdir data
+    mv *.contigs.fasta *.contigs.fasta.fai *.bam *.bam.bai data
+    git clone https://github.com/MillironX/igv-bundler.git igv-bundler
+    mv igv-bundler/{index.html,index.js,package.json} .
     """
 }
 
