@@ -1,20 +1,98 @@
 #!/usr/bin/env nextflow
 
-/* Parameter Delcarations
-    --readsfolder       The folder containing parired-end Illumina reads in
-                            gzipped fastq format. Defaults to the current
-                            directory
-    --threads           Number of threads to process each sample with. Can't be
-                            adjusted on a per-process basic. Defaults to 4
-    --krakendb          The storage location of the Kraken2 database. Defaults
-                            to /kraken2-db
-    --blastdb           The storage location of the NCBI BLAST database.
-                            Defaults to /blastdb
-    --runname           A friendly identifier to describe the samples being
-                            analyzed. Defaults to 'viral-metagenomics'
-    --outfolder         The place where the final anlysis products will be
-                            stored. Defaults to runname_out
+/*
+NAME
+    viral-metagenomics-pipeline - Automated analysis of viral reads in metagenomics samples
+
+SYNOPSIS
+    nextflow run millironx/viral-metagenomics-pipeline
+
+OPTIONS
+
+    --readsfolder
+        The folder containing parired-end Illumina reads in gzipped fastq format. Defaults
+        to the current directory
+
+    --threads
+        Number of threads to process each sample with. Can't be adjusted on a per-process
+        basis. Defaults to 4
+
+    --krakendb
+        The storage location of the Kraken2 database. Defaults to /kraken2-db
+
+    --blastdb
+        The storage location of the NCBI BLAST database. Defaults to /blastdb
+
+    --runname
+        A friendly identifier to describe the samples being analyzed. Defaults to
+        'viral-metagenomics'
+
+    --outfolder
+        The place where the final anlysis products will be stored. Defaults to runname_out
+
+    --dev
+        Run using fewer inputs and faster process options
+
+    --devinputs
+        The number of inputs to take in when using --dev
+
+PROCESS-SPECIFIC OPTIONS
+
+Trimmomatic:
+    Please see https://github.com/usadellab/Trimmomatic for full documentation and
+    descriptions of the trimming steps.
+     --trimmomatic.fastaWithAdapters
+        Passed to ILLUMINACLIP trimming step. Specifies the path to a fasta file containing
+        all the adapters. Valid values are:
+            'NexteraPE-PE.fa'
+            'TruSeq2-PE.fa'
+            'TruSeq3-PE-2.fa'
+            'TruSeq3-PE.fa'
+        Defaults to 'NexteraPI-PE.fa'. If custom adapters are desired, please see
+        Trimmomatic documentation and ensure that the location of the adapter is available
+        to the container running Trimmomatic
+
+     --trimmomatic.seedMismatches
+        Passed to ILLUMINACLIP trimming step. Specifies the maximum mismatch count which
+        will still allow a full adapter match. Defaults to 2
+
+     --trimmomatic.palindromeClipThreshold
+        Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between the
+        two reads must be for PE palindrome read alignment. Defaults to 30
+
+     --trimmomatic.simpleClipThreshold
+        Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between any
+        adapter sequence must be against a read. Defaults to 10
+
+     --trimmomatic.windowSize
+        Passed to SLIDINGWINDOW trimming step. Specifies the number of bases to average
+        across. If used, --trimmomatic.requiredQuality must also be specified.
+
+     --trimmomatic.requiredQuality
+        Passed to the SLIDINGWINDOW trimming step. Specifies the average base quality
+        required. If used, --trimmomatic.windowSize must also be specified.
+
+     --trimmomatic.leading
+        Passed to the LEADING trimming step. Specifies the minimum quality required to keep
+        a base
+
+     --trimmomatic.trailing
+        Passed to the TRAILING trimming step. Specifies the minimum quality required to keep
+        a base
+
+     --trimmomatic.crop
+        Passed to the CROP trimming step. The number of bases to keep, from the start of
+        the read
+
+     --trimmomatic.headcrop
+        Passed to the HEADCROP trimming step. The number of bases to remove from the start
+        of the read
+
+     --trimmomatic.minlen
+        Passed to the MINLEN trimming step. Specifies the minimum length of reads to
+        be kept.
 */
+
 params.readsfolder = "."
 params.threads = 4
 params.outfolder = ""
@@ -54,15 +132,32 @@ process trimmomatic {
     tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into IntermediateTrimmedReads
 
     script:
+    // Specifying Trimmomatic paramaters on the command line can sometimes wipe
+    // out the IlluminaClip settings, so restore them if absent
+    if ( params.trimmomatic.fastaWithAdapters == null ) {
+        params.trimmomatic.fastaWithAdapters = "NexteraPE-PE.fa"
+        params.trimmomatic.seedMismatches = 2
+        params.trimmomatic.palindromeClipThreshold = 30
+        params.trimmomatic.simpleClipThreshold = 10
+    }
+
+    // Put together the trimmomatic parameters
+    ILLUMINACLIP = "ILLUMINACLIP:${params.trimmomatic.fastaWithAdapters}:${params.trimmomatic.seedMismatches}:${params.trimmomatic.palindromeClipThreshold}:${params.trimmomatic.simpleClipThreshold}"
+    SLIDINGWINDOW = ( params.trimmomatic.windowSize > 0 && params.trimmomatic.requiredQuality > 0 ) ? "SLIDINGWINDOW:${params.trimmomatic.windowSize}:${params.trimmomatic.requiredQuality}" : ""
+    LEADING = ( params.trimmomatic.leading > 0 ) ? "LEADING:${params.trimmomatic.leading}" : ""
+    TRAILING = ( params.trimmomatic.trailing > 0 ) ? "TRAILING:${params.trimmomatic.trailing}" : ""
+    CROP = ( params.trimmomatic.crop > 0 ) ? "CROP:${params.trimmomatic.crop}" : ""
+    HEADCROP = ( params.trimmomatic.headcrop > 0 ) ? "HEADCROP:${params.trimmomatic.headcrop}" : ""
+    MINLEN = ( params.trimmomatic.minlen > 0 ) ? "MINLEN:${params.trimmomatic.minlen}" : ""
+    trimsteps = ILLUMINACLIP + ' ' + SLIDINGWINDOW + ' ' + LEADING + ' ' + TRAILING + ' ' + CROP + ' ' + HEADCROP + ' ' + MINLEN
     """
-    # Very generic trimmomatic settings, except that unpaired reads are discarded
     trimmomatic PE -threads ${NumThreads} \
         ${readsFiles} \
         ${sampleName}_trimmomatic_R1.fastq.gz \
         /dev/null \
         ${sampleName}_trimmomatic_R2.fastq.gz \
         /dev/null \
-        ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+        ${trimsteps}
     """
 }
 
