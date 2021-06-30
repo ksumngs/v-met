@@ -6,6 +6,7 @@ NAME
 
 SYNOPSIS
     nextflow run millironx/viral-metagenomics-pipeline
+        --kraken.db <kraken2 database location>
 
 OPTIONS
     --readsfolder
@@ -15,9 +16,6 @@ OPTIONS
     --threads
         Number of threads to process each sample with. Can't be adjusted on a per-process
         basis. Defaults to 4
-
-    --krakendb
-        The storage location of the Kraken2 database. Defaults to /kraken2-db
 
     --blastdb
         The storage location of the NCBI BLAST database. Defaults to /blastdb
@@ -125,12 +123,17 @@ SeqPurge:
     --seqpurge.min_len
         Minimum read length after adapter trimming. Shorter reads are discarded. Defaults
         to 30
+
+Kraken:
+    See https://github.com/DerrickWood/kraken2/wiki/Manual for full documentation of
+    Kraken 2's available options
+    --kraken.db
+        Path to Kraken 2 database. REQUIRED
 */
 
 params.readsfolder = "."
 params.threads = 4
 params.outfolder = ""
-params.krakendb = "/kraken2-db"
 params.blastdb = "/blastdb"
 params.runname = "viral-metagenomics"
 params.dev = false
@@ -138,7 +141,6 @@ params.devinputs = 2
 
 // Make params persist that need to
 NumThreads = params.threads
-KrakenDb = params.krakendb
 RunName = params.runname
 BlastDb = params.blastdb
 BlastAlgorithms = ['blastn', 'blastx']
@@ -242,7 +244,7 @@ process kraken {
     script:
     quickflag = params.dev ? '--quick' : ''
     """
-    kraken2 --db ${KrakenDb} --threads ${NumThreads} --paired ${quickflag} \
+    kraken2 --db ${params.kraken.db} --threads ${NumThreads} --paired ${quickflag} \
         --report "${sampleName}.krpt" \
         --output "${sampleName}.kraken" \
         ${readsFiles}
