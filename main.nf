@@ -129,6 +129,26 @@ Kraken:
     Kraken 2's available options
     --kraken.db
         Path to Kraken 2 database. REQUIRED
+
+Ray:
+    See https://github.com/sebhtml/ray/blob/master/MANUAL_PAGE.txt for full documentation of
+    Ray's available options
+    --ray.kmerlength
+        Selects the length of k-mers. It must be odd because reverse-complement vertices are
+        stored together. Larger k-mers utilise more memory. Defaults to 21
+
+    --ray.minimumSeedLength
+        Changes the minimum seed length. Defaults to 100
+
+    --ray.minimumContigLength
+        Changes the minimum contig length. Defaults to 100
+
+    --ray.maximumSeedCoverageDepth
+        Ignores any seed with a coverage depth above this threshold. Defaults to 4294967295
+
+    --ray.minimumSeedCoverageDepth
+        Sets the minimum seed coverage depth. Any path with a coverage depth lower than this
+        will be discarded. Defaults to 0
 */
 
 params.readsfolder = "."
@@ -338,12 +358,23 @@ process ray {
     tuple val(sampleName), val(assembler), 'Contigs.fasta' into RayContigsForRemapping
 
     script:
+    // Prevent command line from clobbering preset values
+    kmerlength = params.kmerlength ?: 21
+    minimumSeedLength = params.minimumSeedLength ?: 100
+    minimumContigLength = params.minimumContigLength ?: 100
+    maximumSeedCoverageDepth = params.maximumSeedCoverageDepth ?: 4294967295
+    minimumSeedCoverageDepth = params.minimumSeedCoverageDepth ?: 0
+
+    // Export the assembler for future combined steps
     assembler = 'ray'
     """
-    mpiexec -n ${NumThreads} Ray -p ${readsFiles}
+    mpiexec -n ${NumThreads} Ray -k ${kmerlength} \
+        -minimumSeedLength ${minimumSeedLength} \
+        -minimumContigLength ${minimumContigLength} \
+        -maximumSeedCoverageDepth ${maximumSeedCoverageDepth} \
+        -minimumSeedCoverageDepth ${minimumSeedCoverageDepth} -p ${readsFiles}
     mv RayOutput/Contigs.fasta .
     """
-
 }
 
 // Assemble into contigs using iva
