@@ -355,7 +355,7 @@ process ray {
 
     output:
     tuple val(sampleName), val(assembler), 'Contigs.fasta' into RayContigsForBlast
-    tuple val(sampleName), val(assembler), 'Contigs.fasta' into RayContigsForRemapping
+    tuple val(sampleName), val(assembler), file('Contigs.fasta'), file(readsFiles) into RayContigsForRemapping
 
     script:
     // Prevent command line from clobbering preset values
@@ -401,7 +401,7 @@ process a5 {
 
     output:
     tuple val(sampleName), val(assembler), "${sampleName}.contigs.fasta" into A5ContigsForBlast
-    tuple val(sampleName), val(assembler), "${sampleName}.contigs.fasta" into A5ContigsForRemapping
+    tuple val(sampleName), val(assembler), file("${sampleName}.contigs.fasta"), file(readsFiles) into A5ContigsForRemapping
 
     script:
     assembler = 'a5'
@@ -410,34 +410,22 @@ process a5 {
     """
 }
 
-// Preprocess the read files for BWA
-process unzipreads {
-    input:
-    file(readsFiles) from CompressedReadsForRemapping
-
-    output:
-    file("*.fastq") into UncompressedReadsForRemapping
-
-    script:
-    """
-    unpigz -p ${NumThreads} -f ${readsFiles}
-    """
-}
-
 // Remap contigs using BWA
 process bwa {
     input:
-    set val(sampleName), val(assembler), file(contigs) from RayContigsForRemapping.concat(IVAContigsForRemapping, A5ContigsForRemapping)
-    file(readsFiles) from UncompressedReadsForRemapping
+    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, A5ContigsForRemapping)
 
     output:
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
 
     script:
     """
+    cp ${readsFiles[0]} read1.fastq.gz
+    cp ${readsFiles[1]} read2.fastq.gz
+    gunzip read1.fastq.gz read2.fastq.gz
     bwa index ${contigs}
-    bwa aln -t ${NumThreads} ${contigs} ${readsFiles[0]} > ${sampleName}.1.sai
-    bwa aln -t ${NumThreads} ${contigs} ${readsFiles[1]} > ${sampleName}.2.sai
+    bwa aln -t ${NumThreads} ${contigs} read1.fastq > ${sampleName}.1.sai
+    bwa aln -t ${NumThreads} ${contigs} read2.fastq > ${sampleName}.2.sai
     bwa sampe ${contigs} \
         ${sampleName}.1.sai ${sampleName}.2.sai \
         ${readsFiles} > ${sampleName}_${assembler}.sam
