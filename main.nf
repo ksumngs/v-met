@@ -322,33 +322,6 @@ process kraken {
     """
 }
 
-// Pull the viral reads and any unclassified reads from the original reads
-// files for futher downstream processing using KrakenTools
-process filterreads {
-    input:
-    file(readsFiles) from PreKrakenReads
-    set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
-
-    output:
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
-    file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
-
-    // Although I haven't seen it documented anywhere, 0 is unclassified reads
-    // and 10239 is viral reads
-    script:
-    """
-    extract_kraken_reads.py -k ${krakenFile} \
-        -s1 ${readsFiles[0]} -s2 ${readsFiles[1]} \
-        -r ${krakenReport} \
-        -t 0 10239 --include-children \
-        --fastq-output \
-        -o ${sampleName}_filtered_R1.fastq -o2 ${sampleName}_filtered_R2.fastq
-    gzip ${sampleName}_filtered_{R1,R2}.fastq
-    """
-
-}
-
 // Convert the kraken reports to krona input files using KrakenTools then
 // prettify them using unix tools
 process kraken2krona {
@@ -396,6 +369,33 @@ process krona {
     """
     ktImportText * -o krona.html -n root
     """
+}
+
+// Pull the viral reads and any unclassified reads from the original reads
+// files for futher downstream processing using KrakenTools
+process filterreads {
+    input:
+    file(readsFiles) from PreKrakenReads
+    set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
+
+    output:
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
+    file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
+
+    // Although I haven't seen it documented anywhere, 0 is unclassified reads
+    // and 10239 is viral reads
+    script:
+    """
+    extract_kraken_reads.py -k ${krakenFile} \
+        -s1 ${readsFiles[0]} -s2 ${readsFiles[1]} \
+        -r ${krakenReport} \
+        -t 0 10239 --include-children \
+        --fastq-output \
+        -o ${sampleName}_filtered_R1.fastq -o2 ${sampleName}_filtered_R2.fastq
+    gzip ${sampleName}_filtered_{R1,R2}.fastq
+    """
+
 }
 
 // Assemble into contigs using Ray
