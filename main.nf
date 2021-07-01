@@ -383,13 +383,44 @@ process iva {
     set val(sampleName), file(readsFiles) from ReadsForIVA
 
     output:
-    tuple val(sampleName), val(assembler), 'contigs.fasta' into IVAContigsForBlast
-    tuple val(sampleName), val(assembler), 'contigs.fasta' into IVAContigsForRemapping
+    tuple val(sampleName), val(assembler), file('contigs.fasta') into IVAContigsForBlast
+    tuple val(sampleName), val(assembler), file('contigs.fasta'), file(readsFiles) into IVAContigsForRemapping
 
     script:
+    // Prevent parameter clobbering
+    k                  = params.iva.k ?: 19
+    s                  = params.iva.s ?: 11
+    y                  = params.iva.y ?: 0.5
+    ctg_first_trim     = params.iva.ctg_first_trim ?: 25
+    ctg_iter_trim      = params.iva.ctg_iter_trim ?: 10
+    ext_min_cov        = params.iva.ext_min_cov ?: 10
+    ext_min_ratio      = params.iva.ext_min_ratio ?: 4
+    ext_max_bases      = params.iva.ext_max_bases ?: 100
+    ext_min_clip       = params.iva.ext_min_clip ?: 3
+    max_contigs        = params.iva.max_contigs ?: 50
+    seed_min_kmer_cov  = params.iva.seed_min_kmer_cov ?: 25
+    seed_max_kmer_cov  = params.iva.seed_max_kmer_cov ?: 1000000
+    seed_ext_max_bases = params.iva.seed_ext_max_bases ?: 50
+    seed_ext_min_cov   = params.iva.seed_ext_min_cov ?: 10
+    seed_ext_min_ratio = params.iva.seed_ext_min_ratio ?: 4
+    max_insert         = params.iva.max_insert ?: 800
     assembler = 'iva'
     """
-    iva -t ${NumThreads} -f ${readsFiles[0]} -r ${readsFiles[1]} out
+    iva -t ${NumThreads} -k ${k} -s ${s} -y ${y} \
+        --ctg_first_trim ${ctg_first_trim} \
+        --ctg_iter_trim ${ctg_iter_trim} \
+        --ext_min_cov ${ext_min_cov} \
+        --ext_min_ratio ${ext_min_ratio} \
+        --ext_max_bases ${ext_max_bases} \
+        --ext_min_clip ${ext_min_clip} \
+        --max_contigs ${max_contigs} \
+        --seed_min_kmer_cov ${seed_min_kmer_cov} \
+        --seed_max_kmer_cov ${seed_max_kmer_cov} \
+        --seed_ext_max_bases ${seed_ext_max_bases} \
+        --seed_ext_min_cov ${seed_ext_min_cov} \
+        --seed_ext_min_ratio ${seed_ext_min_ratio} \
+        --max_insert ${max_insert} \
+        -f ${readsFiles[0]} -r ${readsFiles[1]} out
     mv out/contigs.fasta .
     """
 }
