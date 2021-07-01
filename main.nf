@@ -149,6 +149,39 @@ Ray:
     --ray.minimumSeedCoverageDepth
         Sets the minimum seed coverage depth. Any path with a coverage depth lower than this
         will be discarded. Defaults to 0
+
+BWA:
+    See http://bio-bwa.sourceforge.net/bwa.shtml for full documentation of BWA's available
+    options. Note that these options only apply to the alignment step.
+    --bwa.n
+        Maximum edit distance if the value is INT, or the fraction of missing alignments
+        given 2% uniform base error rate if FLOAT. In the latter case, the maximum edit
+        distance is automatically chosen for different read lengths. Defaults to 0.04
+
+    --bwa.o
+        Maximum number of gap opens. Defaults to 1
+
+    --bwa.e
+        Maximum number of gap extensions, -1 for k-difference mode (disallowing long gaps).
+        Defaults to -1
+
+    --bwa.d
+        Disallow a long deletion within so many bp towards the 3'-end. Defaults to 16
+
+    --bwa.i
+        Dissalow an indel within so many bp towards the ends. Defaults to 5
+
+    --bwa.k
+        Maximum edit distance in the seed
+
+    --bwa.M
+        Mismatch penalty. Defaults to 3
+
+    --bwa.O
+        Gap open penalty. Defaults to 4
+
+    --bwa.E
+        Gap extension penalty. Defaults to 4
 */
 
 params.readsfolder = "."
@@ -433,13 +466,43 @@ process bwa {
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
 
     script:
+    // Fix clobbered parameters
+    n = params.bwa.n ?: 0.04
+    o = params.bwa.o ?: 1
+    e = params.bwa.e ?: -1
+    d = params.bwa.d ?: 16
+    i = params.bwa.i ?: 5
+    k = params.bwa.k ?: 2
+    M = params.bwa.M ?: 3
+    O = params.bwa.O ?: 4
+    E = params.bwa.E ?: 4
     """
     cp ${readsFiles[0]} read1.fastq.gz
     cp ${readsFiles[1]} read2.fastq.gz
     gunzip read1.fastq.gz read2.fastq.gz
     bwa index ${contigs}
-    bwa aln -t ${NumThreads} ${contigs} read1.fastq > ${sampleName}.1.sai
-    bwa aln -t ${NumThreads} ${contigs} read2.fastq > ${sampleName}.2.sai
+    bwa aln \
+        -n ${n} \
+        -o ${o} \
+        -e ${e} \
+        -d ${d} \
+        -i ${i} \
+        -k ${k} \
+        -M ${M} \
+        -O ${O} \
+        -E ${E} \
+        -t ${NumThreads} ${contigs} read1.fastq > ${sampleName}.1.sai
+    bwa aln \
+        -n ${n} \
+        -o ${o} \
+        -e ${e} \
+        -d ${d} \
+        -i ${i} \
+        -k ${k} \
+        -M ${M} \
+        -O ${O} \
+        -E ${E} \
+        -t ${NumThreads} ${contigs} read2.fastq > ${sampleName}.2.sai
     bwa sampe ${contigs} \
         ${sampleName}.1.sai ${sampleName}.2.sai \
         ${readsFiles} > ${sampleName}_${assembler}.sam
@@ -526,13 +589,13 @@ process blast {
     outFile = "${RunName}_${sampleName}_${assembler}.${program}.tsv"
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
-    ${program} -query ${readsFiles} \
-        -db ${BlastDb}/${dbExtension} \
-        -max_hsps ${maxhsps} \
-        -num_alignments ${nalignments} \
-        -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-        -evalue 1e-5 \
-        -num_threads ${NumThreads} \
-        -task ${algorithm} >> ${outFile}
+    #${program} -query ${readsFiles} \
+    #    -db ${BlastDb}/${dbExtension} \
+    #    -max_hsps ${maxhsps} \
+    #    -num_alignments ${nalignments} \
+    #    -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
+    #    -evalue 1e-5 \
+    #    -num_threads ${NumThreads} \
+    #    -task ${algorithm} >> ${outFile}
     """
 }
