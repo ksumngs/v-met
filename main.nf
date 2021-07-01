@@ -359,11 +359,11 @@ process ray {
 
     script:
     // Prevent command line from clobbering preset values
-    kmerlength = params.kmerlength ?: 21
-    minimumSeedLength = params.minimumSeedLength ?: 100
-    minimumContigLength = params.minimumContigLength ?: 100
-    maximumSeedCoverageDepth = params.maximumSeedCoverageDepth ?: 4294967295
-    minimumSeedCoverageDepth = params.minimumSeedCoverageDepth ?: 0
+    kmerlength               = params.ray.kmerlength ?: 21
+    minimumSeedLength        = params.ray.minimumSeedLength ?: 100
+    minimumContigLength      = params.ray.minimumContigLength ?: 100
+    maximumSeedCoverageDepth = params.ray.maximumSeedCoverageDepth ?: 4294967295
+    minimumSeedCoverageDepth = params.ray.minimumSeedCoverageDepth ?: 0
 
     // Export the assembler for future combined steps
     assembler = 'ray'
