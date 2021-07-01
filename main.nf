@@ -182,12 +182,31 @@ BWA:
 
     --bwa.E
         Gap extension penalty. Defaults to 4
+
+BLAST:
+    --blast.db
+        Path to blast databases. REQUIRED. It is also recommended to place this value in the
+        BLASTDB environment variable.
+
+    --blast.max_hsps
+        Max hits from blast. Defaults to 10
+
+    --blast.num_alignments
+        Max alignments from blast. Defaults to 5
+
+    --blast.outfmt
+        Output format of blast. Defaults to
+        '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
+        It is highly recommended to not alter this, as a heading will be generated based on
+        the default value
+
+    --blast.evalue
+        The maximum e-value allowed. Defaults to 1e-5
 */
 
 params.readsfolder = "."
 params.threads = 4
 params.outfolder = ""
-params.blastdb = "/blastdb"
 params.runname = "viral-metagenomics"
 params.dev = false
 params.devinputs = 2
@@ -195,7 +214,6 @@ params.devinputs = 2
 // Make params persist that need to
 NumThreads = params.threads
 RunName = params.runname
-BlastDb = params.blastdb
 BlastAlgorithms = ['blastn', 'blastx']
 
 // Create an outfolder name if one wasn't provided
@@ -571,31 +589,36 @@ process blast {
     file("${RunName}_${sampleName}_${assembler}.${program}.tsv")
 
     script:
+    // Prevent parameter clobbering
+    max_hsps       = params.blast.max_hsps       ?: 10
+    num_alignments = params.blast.num_alignments ?: 5
+    outfmt         = params.blast.outfmt         ?: '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
+    evalue         = params.blast.evalue         ?: 1e-5
+
     // Pick the faster algorithm if this is a development cycle, otherwise
     // the titular program is also the name of the algorithm
     algorithm = program
     if ( params.dev ) {
         algorithm = ( program == 'blastn' ) ? 'megablast' : 'blastx-fast'
+        max_hsps = 1
+        num_alignments = 1
+        evalue = 1e-50
     }
 
     // Switch which database to read from
     dbExtension = (program == 'blastn') ? 'nt' : 'nr'
 
-    // Take only first hits if this is a development cycle
-    maxhsps = params.dev ? 1 : 10
-    nalignments = params.dev ? 1 : 5
-
     // Squash the filename into a single variable
     outFile = "${RunName}_${sampleName}_${assembler}.${program}.tsv"
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
-    #${program} -query ${readsFiles} \
-    #    -db ${BlastDb}/${dbExtension} \
-    #    -max_hsps ${maxhsps} \
-    #    -num_alignments ${nalignments} \
-    #    -outfmt "6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send" \
-    #    -evalue 1e-5 \
-    #    -num_threads ${NumThreads} \
-    #    -task ${algorithm} >> ${outFile}
+    ${program} -query ${readsFiles} \
+        -db ${params.blast.db}/${dbExtension} \
+        -max_hsps ${max_hsps} \
+        -num_alignments ${num_alignments} \
+        -outfmt ${outfmt} \
+        -evalue ${evalue} \
+        -num_threads ${NumThreads} \
+        -task ${algorithm} >> ${outFile}
     """
 }
