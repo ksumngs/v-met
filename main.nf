@@ -237,6 +237,7 @@ process trim {
 
     output:
     tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into TrimmedReads
+    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into PreKrakenReads
 
     script:
     // Specifying Trimmomatic paramaters on the command line can sometimes wipe
