@@ -347,6 +347,7 @@ process filterreads {
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForMetaVelvet
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForAbyss
     file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
@@ -459,10 +460,26 @@ process metavelvet {
     """
 }
 
+// Assemble using Abyss
+process abyss {
+    input:
+    set val(sampleName), file(readsFiles) from ReadsForAbyss
+
+    output:
+    tuple val(sampleName), val(assembler), 'contigs.fa' into AbyssContigsForBlast
+    tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFiles) into AbyssContigsForRemapping
+
+    script:
+    """
+    abyss-pe name=${sampleName} k=21 in="${readsFiles}"
+    cp ${sampleName}-contigs.fa contigs.fa
+    """
+}
+
 // Remap contigs using BWA
 process bwa {
     input:
-    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping)
+    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping)
 
     output:
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
@@ -566,7 +583,7 @@ process blast {
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast)
+    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast)
     each program from BlastAlgorithms
 
     output:
