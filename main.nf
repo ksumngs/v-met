@@ -231,12 +231,12 @@ Channel
     .set{ RawReads }
 
 // First trim, using Trimmomatic
-process trimmomatic {
+process trim {
     input:
     set val(sampleName), file(readsFiles) from RawReads
 
     output:
-    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into IntermediateTrimmedReads
+    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into TrimmedReads
 
     script:
     // Specifying Trimmomatic paramaters on the command line can sometimes wipe
@@ -268,45 +268,10 @@ process trimmomatic {
     """
 }
 
-// Secord trim, using SeqPurge
-process seqpurge {
-    input:
-    set val(sampleName), file(readsFiles) from IntermediateTrimmedReads
-
-    // These trimmed reads start a branching path:
-    // First branch: get classified by Kraken and produce visuals
-    // Secord branch: based on classification, go to de novo assembly
-    output:
-    tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into FullyTrimmedReads
-    file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into PreKrakenReads
-
-    script:
-    // Prevent clobbered parameters
-    a1 = params.seqpurge.a1 ?: 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
-    a2 = params.seqpurge.a2 ?: 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'
-    match_perc = params.seqpurge.match_perc ?: 80
-    mep = params.seqpurge.mep ?: 1e-6
-    qcut = params.seqpurge.qcut ?: 15
-    qwin = params.seqpurge.qwin ?: 5
-    qoff = params.seqpurge.qoff ?: 33
-    ncut = params.seqpurge.ncut ?: 7
-    min_len = params.seqpurge.min_len ?: 30
-
-    // Run SeqPurge
-    """
-    SeqPurge -threads ${NumThreads} \
-        -a1 ${a1} -a2 ${a2} -match_perc ${match_perc} -mep ${mep} -qcut ${qcut} \
-        -qwin ${qwin} -qoff ${qoff} -ncut ${ncut} -min_len ${min_len} -in1 \
-        ${readsFiles[0]} -in2  ${readsFiles[1]} \
-        -out1 ${sampleName}_seqpurge_R1.fastq.gz \
-        -out2 ${sampleName}_seqpurge_R2.fastq.gz
-    """
-}
-
 // Classify reads using Kraken
 process kraken {
     input:
-    set val(sampleName), file(readsFiles) from FullyTrimmedReads
+    set val(sampleName), file(readsFiles) from TrimmedReads
 
     output:
     tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
