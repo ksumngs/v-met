@@ -346,6 +346,7 @@ process filterreads {
     output:
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForMetaVelvet
     file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
@@ -437,6 +438,24 @@ process iva {
         --max_insert ${max_insert} \
         -f ${readsFiles[0]} -r ${readsFiles[1]} out
     mv out/contigs.fasta .
+    """
+}
+
+// Assemble using MetaVelvet
+process metavelvet {
+    input:
+    set val(sampleName), file(readsFiles) from ReadsForMetaVelvet
+
+    output:
+    tuple val(sampleName), val(assembler), 'contigs.fa' into MetaVelvetContigsForBlast
+    tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFiles) into MetaVelvetContigsForRemapping
+
+    script:
+    """
+    velveth out 51 -fastq.gz -longPaired -separate ${readsFiles}
+    velvetg out -exp_cov auto -ins_length 260
+    meta-velvetg out
+    mv out/contigs.fa .
     """
 }
 
