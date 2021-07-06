@@ -348,6 +348,7 @@ process filterreads {
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForMetaVelvet
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForAbyss
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForTrinity
     file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
@@ -452,6 +453,7 @@ process metavelvet {
     tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFiles) into MetaVelvetContigsForRemapping
 
     script:
+    assembler = 'metavelvet'
     """
     velveth out 51 -fastq.gz -longPaired -separate ${readsFiles}
     velvetg out -exp_cov auto -ins_length 260
@@ -470,16 +472,34 @@ process abyss {
     tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFiles) into AbyssContigsForRemapping
 
     script:
+    assembler = 'abyss'
     """
     abyss-pe name=${sampleName} k=21 in="${readsFiles}"
     cp ${sampleName}-contigs.fa contigs.fa
     """
 }
 
+// Assemble using Trinity
+process trinity {
+    input:
+    set val(sampleName), file(readsFiles) from ReadsForTrinity
+
+    output:
+    tuple val(sampleName), val(assembler), 'Trinity.fasta' into TrinityContigsForBlast
+    tuple val(sampleName), val(assembler), file('Trinity.fasta'), file(readsFiles) into TrinityContigsForRemapping
+
+    script:
+    assembler = 'abyss'
+    """
+    Trinity --seqType fq --left ${readsFiles[0]} --right ${readsFiles[1]} --CPU ${NumThreads} --max_memory 10G --output out
+    mv out/Trinity.fasta .
+    """
+}
+
 // Remap contigs using BWA
 process bwa {
     input:
-    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping)
+    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping, TrinityContigsForRemapping)
 
     output:
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
@@ -583,7 +603,7 @@ process blast {
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast)
+    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast, TrinityContigsForBlast)
     each program from BlastAlgorithms
 
     output:
