@@ -490,10 +490,10 @@ process trinity {
     tuple val(sampleName), val(assembler), file('Trinity.fasta'), file(readsFiles) into TrinityContigsForRemapping
 
     script:
-    assembler = 'abyss'
+    assembler = 'trinity'
     """
-    Trinity --seqType fq --left ${readsFiles[0]} --right ${readsFiles[1]} --CPU ${NumThreads} --max_memory 10G --output out
-    mv out/Trinity.fasta .
+    Trinity --seqType fq --left ${readsFiles[0]} --right ${readsFiles[1]} --CPU ${NumThreads} --max_memory 10G --output trinity
+    mv trinity/Trinity.fasta .
     """
 }
 
