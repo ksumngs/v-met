@@ -89,41 +89,6 @@ Trimmomatic:
         Passed to the MINLEN trimming step. Specifies the minimum length of reads to
         be kept.
 
-SeqPurge:
-    See https://github.com/imgag/ngs-bits/blob/master/doc/tools/SeqPurge.md for full
-    parameter descriptions.
-    --seqpurge.a1
-        Forward adapter sequence (at least 15 bases). Defaults
-        to 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
-
-    --seqpurge.a2
-        Reverse adapter sequence (at least 15 bases). Defaults
-        to 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'
-
-    --seqpurge.match_perc
-        Minimum percentage of matching bases for sequence/adapter matches. Defaults to 80
-
-    --seqpurge.mep
-        Maximum error probability of insert and adapter matches. Defaults to 1e-6
-
-    --seqpurge.qcut
-        Quality trimming cutoff for trimming from the end of reads using a sliding window
-        approach. Set to 0 to disable. Defaults to 15
-
-    --seqpurge.qwin
-        Quality trimming window size. Defaults to 5
-
-    --seqpurge.qoff
-        Quality trimming FASTQ score offset. Defaults to 33
-
-    --seqpurge.ncut
-        Number of subsequent Ns to trimmed using a sliding window approach from the front of
-        reads. Set to 0 to disable. Defaults to 7
-
-    --seqpurge.min_len
-        Minimum read length after adapter trimming. Shorter reads are discarded. Defaults
-        to 30
-
 Kraken:
     See https://github.com/DerrickWood/kraken2/wiki/Manual for full documentation of
     Kraken 2's available options
