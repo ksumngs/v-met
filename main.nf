@@ -1,6 +1,8 @@
 #!/usr/bin/env nextflow
 
-/*
+if (params.help) {
+    log.info \
+    """
 NAME
     viral-metagenomics-pipeline - Automated analysis of viral reads in metagenomics samples
 
@@ -167,7 +169,9 @@ BLAST:
 
     --blast.evalue
         The maximum e-value allowed. Defaults to 1e-5
-*/
+"""
+exit 0
+}
 
 params.readsfolder = "."
 params.threads = 4
