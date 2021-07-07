@@ -181,7 +181,6 @@ params.dev = false
 params.devinputs = 2
 
 // Make params persist that need to
-NumThreads = params.threads
 RunName = params.runname
 BlastAlgorithms = ['blastn', 'blastx']
 
@@ -228,7 +227,7 @@ process trim {
     MINLEN = ( params.trimmomatic.minlen > 0 ) ? "MINLEN:${params.trimmomatic.minlen}" : ""
     trimsteps = ILLUMINACLIP + ' ' + SLIDINGWINDOW + ' ' + LEADING + ' ' + TRAILING + ' ' + CROP + ' ' + HEADCROP + ' ' + MINLEN
     """
-    trimmomatic PE -threads ${NumThreads} \
+    trimmomatic PE -threads ${params.threads} \
         ${readsFiles} \
         ${sampleName}_trimmomatic_R1.fastq.gz \
         /dev/null \
@@ -250,7 +249,7 @@ process kraken {
     script:
     quickflag = params.dev ? '--quick' : ''
     """
-    kraken2 --db ${params.kraken.db} --threads ${NumThreads} --paired ${quickflag} \
+    kraken2 --db ${params.kraken.db} --threads ${params.threads} --paired ${quickflag} \
         --report "${sampleName}.krpt" \
         --output "${sampleName}.kraken" \
         ${readsFiles}
@@ -356,7 +355,7 @@ process ray {
     // Export the assembler for future combined steps
     assembler = 'ray'
     """
-    mpiexec -n ${NumThreads} Ray -k ${kmerlength} \
+    mpiexec -n ${params.threads} Ray -k ${kmerlength} \
         -minimumSeedLength ${minimumSeedLength} \
         -minimumContigLength ${minimumContigLength} \
         -maximumSeedCoverageDepth ${maximumSeedCoverageDepth} \
@@ -394,7 +393,7 @@ process iva {
     max_insert         = params.iva.max_insert ?: 800
     assembler = 'iva'
     """
-    iva -t ${NumThreads} -k ${k} -s ${s} -y ${y} \
+    iva -t ${params.threads} -k ${k} -s ${s} -y ${y} \
         --ctg_first_trim ${ctg_first_trim} \
         --ctg_iter_trim ${ctg_iter_trim} \
         --ext_min_cov ${ext_min_cov} \
@@ -461,7 +460,7 @@ process trinity {
     script:
     assembler = 'trinity'
     """
-    Trinity --seqType fq --left ${readsFiles[0]} --right ${readsFiles[1]} --CPU ${NumThreads} --max_memory 10G --output trinity
+    Trinity --seqType fq --left ${readsFiles[0]} --right ${readsFiles[1]} --CPU ${params.threads} --max_memory 10G --output trinity
     mv trinity/Trinity.fasta .
     """
 }
@@ -500,7 +499,7 @@ process bwa {
         -M ${M} \
         -O ${O} \
         -E ${E} \
-        -t ${NumThreads} ${contigs} read1.fastq > ${sampleName}.1.sai
+        -t ${params.threads} ${contigs} read1.fastq > ${sampleName}.1.sai
     bwa aln \
         -n ${n} \
         -o ${o} \
@@ -511,7 +510,7 @@ process bwa {
         -M ${M} \
         -O ${O} \
         -E ${E} \
-        -t ${NumThreads} ${contigs} read2.fastq > ${sampleName}.2.sai
+        -t ${params.threads} ${contigs} read2.fastq > ${sampleName}.2.sai
     bwa sampe ${contigs} \
         ${sampleName}.1.sai ${sampleName}.2.sai \
         ${readsFiles} > ${sampleName}_${assembler}.sam
@@ -609,7 +608,7 @@ process blast {
         -num_alignments ${num_alignments} \
         -outfmt ${outfmt} \
         -evalue ${evalue} \
-        -num_threads ${NumThreads} \
+        -num_threads ${params.threads} \
         -task ${algorithm} >> ${outFile}
     """
 }
