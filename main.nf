@@ -19,9 +19,6 @@ OPTIONS
         Number of threads to process each sample with. Can't be adjusted on a per-process
         basis. Defaults to 4
 
-    --blastdb
-        The storage location of the NCBI BLAST database. Defaults to /blastdb
-
     --runname
         A friendly identifier to describe the samples being analyzed. Defaults to
         'viral-metagenomics'
