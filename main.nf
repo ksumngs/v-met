@@ -418,8 +418,8 @@ process metavelvet {
     set val(sampleName), file(readsFiles) from ReadsForMetaVelvet
 
     output:
-    tuple val(sampleName), val(assembler), 'contigs.fa' into MetaVelvetContigsForBlast
-    tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFiles) into MetaVelvetContigsForRemapping
+    tuple val(sampleName), val(assembler), 'meta-velvetg.contigs.fa' into MetaVelvetContigsForBlast
+    tuple val(sampleName), val(assembler), file('meta-velvetg.contigs.fa'), file(readsFiles) into MetaVelvetContigsForRemapping
 
     script:
     assembler = 'metavelvet'
@@ -427,7 +427,7 @@ process metavelvet {
     velveth out 51 -fastq.gz -longPaired -separate ${readsFiles}
     velvetg out -exp_cov auto -ins_length 260
     meta-velvetg out
-    mv out/contigs.fa .
+    mv out/meta-velvetg.contigs.fa .
     """
 }
 
