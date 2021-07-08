@@ -105,14 +105,6 @@ BLAST:
 exit 0
 }
 
-params.kmerLength = 35
-params.readsfolder = "."
-params.threads = 4
-params.outfolder = ""
-params.runname = "viral-metagenomics"
-params.dev = false
-params.devinputs = 2
-
 // Make params persist that need to
 RunName = params.runname
 
