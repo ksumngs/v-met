@@ -240,22 +240,19 @@ process bwa {
     cpus params.threads
 
     input:
-    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat( MetaVelvetContigsForRemapping, AbyssContigsForRemapping)
+    set val(sampleName), val(assembler), file(contigs), file(readsFile) from RayContigsForRemapping.concat(MetaVelvetContigsForRemapping, AbyssContigsForRemapping)
 
     output:
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
 
     script:
     """
-    cp ${readsFiles[0]} read1.fastq.gz
-    cp ${readsFiles[1]} read2.fastq.gz
-    gunzip read1.fastq.gz read2.fastq.gz
+    cp ${readsFile} read.fastq.gz
+    gunzip read.fastq.gz
     bwa index ${contigs}
-    bwa aln -t ${params.threads} ${contigs} read1.fastq > ${sampleName}.1.sai
-    bwa aln -t ${params.threads} ${contigs} read2.fastq > ${sampleName}.2.sai
-    bwa sampe ${contigs} \
-        ${sampleName}.1.sai ${sampleName}.2.sai \
-        ${readsFiles} > ${sampleName}_${assembler}.sam
+    bwa aln -t ${params.threads} ${contigs} read.fastq > ${sampleName}.sai
+    bwa samse ${contigs} \
+        ${sampleName}.sai ${readsFile} > ${sampleName}_${assembler}.sam
     """
 }
 
