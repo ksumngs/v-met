@@ -155,7 +155,7 @@ process filterreads {
     tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForRay
     tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForMetaVelvet
     tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForAbyss
-    file("${sampleName}_filtered_.fastq.gz") into CompressedReadsForRemapping
+    file("${sampleName}_filtered.fastq.gz") into CompressedReadsForRemapping
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
     // and 10239 is viral reads
