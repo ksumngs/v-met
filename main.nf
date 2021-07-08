@@ -199,19 +199,19 @@ process metavelvet {
     cpus params.threads
 
     input:
-    set val(sampleName), file(readsFiles) from ReadsForMetaVelvet
+    set val(sampleName), file(readsFile) from ReadsForMetaVelvet
 
     output:
     tuple val(sampleName), val(assembler), 'meta-velvetg.contigs.fa' into MetaVelvetContigsForBlast
-    tuple val(sampleName), val(assembler), file('meta-velvetg.contigs.fa'), file(readsFiles) into MetaVelvetContigsForRemapping
+    tuple val(sampleName), val(assembler), file('meta-velvetg.contigs.fa'), file(readsFile) into MetaVelvetContigsForRemapping
 
     script:
     assembler = 'metavelvet'
     """
     export OMP_NUM_THREADS=${params.threads}
     export OMP_THREAD_LIMIT=${params.threads}
-    velveth out ${params.kmerLength} -fastq.gz -shortPaired -separate ${readsFiles}
-    velvetg out -exp_cov auto -ins_length 260
+    velveth out ${params.kmerLength} -fastq.gz -long ${readsFile}
+    velvetg out -exp_cov auto
     meta-velvetg out
     mv out/meta-velvetg.contigs.fa .
     """
