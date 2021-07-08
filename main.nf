@@ -200,6 +200,7 @@ Channel
 
 // First trim, using Trimmomatic
 process trim {
+    cpus params.threads
     input:
     set val(sampleName), file(readsFiles) from RawReads
 
@@ -239,6 +240,8 @@ process trim {
 
 // Classify reads using Kraken
 process kraken {
+    cpus params.threads
+
     input:
     set val(sampleName), file(readsFiles) from TrimmedReads
 
@@ -259,6 +262,8 @@ process kraken {
 // Convert the kraken reports to krona input files using KrakenTools then
 // prettify them using unix tools
 process kraken2krona {
+    cpus 1
+
     input:
     set val(sampleName), file(krakenReport) from KrakenVisuals
 
@@ -288,6 +293,8 @@ process kraken2krona {
 // Collect all of the krona input files and convert them to a single graphical
 // webpage to ship to the user
 process krona {
+    cpus 1
+
     // This is a final step: publish it
     publishDir OutFolder, mode: 'copy'
 
@@ -308,6 +315,8 @@ process krona {
 // Pull the viral reads and any unclassified reads from the original reads
 // files for futher downstream processing using KrakenTools
 process filterreads {
+    cpus 1
+
     input:
     file(readsFiles) from PreKrakenReads
     set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
@@ -337,6 +346,8 @@ process filterreads {
 
 // Assemble into contigs using Ray
 process ray {
+    cpus params.threads
+
     input:
     set val(sampleName), file(readsFiles) from ReadsForRay
 
@@ -366,6 +377,8 @@ process ray {
 
 // Assemble into contigs using iva
 process iva {
+    cpus params.threads
+
     input:
     set val(sampleName), file(readsFiles) from ReadsForIVA
 
@@ -414,6 +427,8 @@ process iva {
 
 // Assemble using MetaVelvet
 process metavelvet {
+    cpus params.threads
+
     input:
     set val(sampleName), file(readsFiles) from ReadsForMetaVelvet
 
@@ -425,6 +440,8 @@ process metavelvet {
     assembler = 'metavelvet'
     """
     velveth out 51 -fastq.gz -longPaired -separate ${readsFiles}
+    export OMP_NUM_THREADS=${params.threads}
+    export OMP_THREAD_LIMIT=${params.threads}
     velvetg out -exp_cov auto -ins_length 260
     meta-velvetg out
     mv out/meta-velvetg.contigs.fa .
@@ -433,6 +450,8 @@ process metavelvet {
 
 // Assemble using Abyss
 process abyss {
+    cpus params.threads
+
     input:
     set val(sampleName), file(readsFiles) from ReadsForAbyss
 
@@ -443,13 +462,15 @@ process abyss {
     script:
     assembler = 'abyss'
     """
-    abyss-pe name=${sampleName} k=21 in="${readsFiles}"
+    abyss-pe np=${params.threads} name=${sampleName} k=21 in="${readsFiles}"
     cp ${sampleName}-contigs.fa contigs.fa
     """
 }
 
 // Assemble using Trinity
 process trinity {
+    cpus params.threads
+
     input:
     set val(sampleName), file(readsFiles) from ReadsForTrinity
 
@@ -467,6 +488,8 @@ process trinity {
 
 // Remap contigs using BWA
 process bwa {
+    cpus params.threads
+
     input:
     set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping, TrinityContigsForRemapping)
 
@@ -519,6 +542,8 @@ process bwa {
 
 // Sort and compress the sam files for visualization
 process sortsam {
+    cpus 1
+
     input:
     set val(sampleName), val(assembler), file(contigs), file(samfile) from RemappedReads
 
@@ -544,6 +569,8 @@ process sortsam {
 
 // Create a viewer of all the assembly files
 process assemblyview {
+    cpus 1
+
     publishDir OutFolder, mode: 'copy'
 
     input:
@@ -566,6 +593,8 @@ process assemblyview {
 
 // Blast contigs
 process blast {
+    cpus params.threads
+
     // This is a final step: publish it
     publishDir OutFolder, mode: 'copy'
 
