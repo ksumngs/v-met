@@ -195,25 +195,6 @@ process ray {
     """
 }
 
-// Assemble into contigs using iva
-process iva {
-    cpus params.threads
-
-    input:
-    set val(sampleName), file(readsFiles) from ReadsForIVA
-
-    output:
-    tuple val(sampleName), val(assembler), file('contigs.fasta') into IVAContigsForBlast
-    tuple val(sampleName), val(assembler), file('contigs.fasta'), file(readsFiles) into IVAContigsForRemapping
-
-    script:
-    assembler = 'iva'
-    """
-    iva -t ${params.threads} -k ${params.kmerLength} -f ${readsFiles[0]} -r ${readsFiles[1]} out
-    mv out/contigs.fasta .
-    """
-}
-
 // Assemble using MetaVelvet
 process metavelvet {
     cpus params.threads
@@ -280,7 +261,7 @@ process bwa {
     cpus params.threads
 
     input:
-    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping, TrinityContigsForRemapping)
+    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat( MetaVelvetContigsForRemapping, AbyssContigsForRemapping, TrinityContigsForRemapping)
 
     output:
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
@@ -360,7 +341,7 @@ process blast {
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast, TrinityContigsForBlast)
+    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(MetaVelvetContigsForBlast, AbyssContigsForBlast, TrinityContigsForBlast)
 
     output:
     file("${RunName}_${sampleName}_${assembler}.blast.tsv")
