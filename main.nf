@@ -72,7 +72,7 @@ process kraken {
     cpus params.threads
 
     input:
-    set val(sampleName), file(readsFiles) from RawReads
+    set file(readsFile) from RawReads
 
     output:
     tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
@@ -80,11 +80,13 @@ process kraken {
 
     script:
     quickflag = params.dev ? '--quick' : ''
+    fileName = readsFile.tokenize('.')
+    sampleName = fileName[0]
     """
-    kraken2 --db ${params.krakenDb} --threads ${params.threads} --paired ${quickflag} \
+    kraken2 --db ${params.krakenDb} --threads ${params.threads} ${quickflag} \
         --report "${sampleName}.krpt" \
         --output "${sampleName}.kraken" \
-        ${readsFiles}
+        ${readsFile}
     """
 }
 
