@@ -115,7 +115,6 @@ params.devinputs = 2
 
 // Make params persist that need to
 RunName = params.runname
-BlastAlgorithms = ['blastn', 'blastx']
 
 // Create an outfolder name if one wasn't provided
 if(params.outfolder == "") {
@@ -454,13 +453,12 @@ process blast {
     // blastn and blastx needs to be applied to all contigs
     input:
     set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast, TrinityContigsForBlast)
-    each program from BlastAlgorithms
 
     output:
-    file("${RunName}_${sampleName}_${assembler}.${program}.tsv")
+    file("${RunName}_${sampleName}_${assembler}.blast.tsv")
 
     script:
-    // Prevent parameter clobbering
+    // Separate parameters from script
     max_hsps       = 10
     num_alignments = 5
     outfmt         = '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
@@ -468,27 +466,22 @@ process blast {
 
     // Pick the faster algorithm if this is a development cycle, otherwise
     // the titular program is also the name of the algorithm
-    algorithm = ( program == 'blastn' ) ? 'megablast' : 'blastx-fast'
     if ( params.dev ) {
         max_hsps = 1
         num_alignments = 1
         evalue = 1e-50
     }
 
-    // Switch which database to read from
-    dbExtension = (program == 'blastn') ? 'nt' : 'nr'
-
     // Squash the filename into a single variable
-    outFile = "${RunName}_${sampleName}_${assembler}.${program}.tsv"
+    outFile = "${RunName}_${sampleName}_${assembler}.blast.tsv"
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
-    ${program} -query ${readsFiles} \
-        -db ${params.blastDb}/${dbExtension} \
+    blastn -query ${readsFiles} \
+        -db ${params.blastDb}/nt \
         -max_hsps ${max_hsps} \
         -num_alignments ${num_alignments} \
         -outfmt ${outfmt} \
         -evalue ${evalue} \
-        -num_threads ${params.threads} \
-        -task ${algorithm} >> ${outFile}
+        -num_threads ${params.threads} >> ${outFile}
     """
 }
