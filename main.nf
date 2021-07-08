@@ -35,12 +35,15 @@ OPTIONS
     --devinputs
         The number of inputs to take in when using --dev
 
+    --kmer-length
+        The length of kmers when assembling. Defaults to 35
+
 PROCESS-SPECIFIC OPTIONS
 Trimmomatic:
     Please see https://github.com/usadellab/Trimmomatic for full documentation and
     descriptions of the trimming steps.
 
-    --trimmomatic.fastaWithAdapters
+    --trim-adapters
         Passed to ILLUMINACLIP trimming step. Specifies the path to a fasta file containing
         all the adapters. Valid values are:
             'NexteraPE-PE.fa'
@@ -51,128 +54,61 @@ Trimmomatic:
         Trimmomatic documentation and ensure that the location of the adapter is available
         to the container running Trimmomatic
 
-    --trimmomatic.seedMismatches
+    --trim-mismatches
         Passed to ILLUMINACLIP trimming step. Specifies the maximum mismatch count which
         will still allow a full adapter match. Defaults to 2
 
-    --trimmomatic.palindromeClipThreshold
+    --trim-pclip
         Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between the
         two reads must be for PE palindrome read alignment. Defaults to 30
 
-    --trimmomatic.simpleClipThreshold
+    --trim-clip
         Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between any
         adapter sequence must be against a read. Defaults to 10
 
-    --trimmomatic.windowSize
+    --trim-winsize
         Passed to SLIDINGWINDOW trimming step. Specifies the number of bases to average
-        across. If used, --trimmomatic.requiredQuality must also be specified.
+        across. If used, --trim-winqual must also be specified.
 
-    --trimmomatic.requiredQuality
+    --trim-winqual
         Passed to the SLIDINGWINDOW trimming step. Specifies the average base quality
-        required. If used, --trimmomatic.windowSize must also be specified.
+        required. If used, --trim-winsize must also be specified.
 
-    --trimmomatic.leading
+    --trim-leading
         Passed to the LEADING trimming step. Specifies the minimum quality required to keep
         a base
 
-    --trimmomatic.trailing
+    --trim-trailing
         Passed to the TRAILING trimming step. Specifies the minimum quality required to keep
         a base
 
-    --trimmomatic.crop
+    --trim-crop
         Passed to the CROP trimming step. The number of bases to keep, from the start of
         the read
 
-    --trimmomatic.headcrop
+    --trim-headcrop
         Passed to the HEADCROP trimming step. The number of bases to remove from the start
         of the read
 
-    --trimmomatic.minlen
+    --trim-minlen
         Passed to the MINLEN trimming step. Specifies the minimum length of reads to
         be kept.
 
 Kraken:
     See https://github.com/DerrickWood/kraken2/wiki/Manual for full documentation of
     Kraken 2's available options
-    --kraken.db
+    --kraken-db
         Path to Kraken 2 database. REQUIRED
 
-Ray:
-    See https://github.com/sebhtml/ray/blob/master/MANUAL_PAGE.txt for full documentation of
-    Ray's available options
-    --ray.kmerlength
-        Selects the length of k-mers. It must be odd because reverse-complement vertices are
-        stored together. Larger k-mers utilise more memory. Defaults to 21
-
-    --ray.minimumSeedLength
-        Changes the minimum seed length. Defaults to 100
-
-    --ray.minimumContigLength
-        Changes the minimum contig length. Defaults to 100
-
-    --ray.maximumSeedCoverageDepth
-        Ignores any seed with a coverage depth above this threshold. Defaults to 4294967295
-
-    --ray.minimumSeedCoverageDepth
-        Sets the minimum seed coverage depth. Any path with a coverage depth lower than this
-        will be discarded. Defaults to 0
-
-BWA:
-    See http://bio-bwa.sourceforge.net/bwa.shtml for full documentation of BWA's available
-    options. Note that these options only apply to the alignment step.
-    --bwa.n
-        Maximum edit distance if the value is INT, or the fraction of missing alignments
-        given 2% uniform base error rate if FLOAT. In the latter case, the maximum edit
-        distance is automatically chosen for different read lengths. Defaults to 0.04
-
-    --bwa.o
-        Maximum number of gap opens. Defaults to 1
-
-    --bwa.e
-        Maximum number of gap extensions, -1 for k-difference mode (disallowing long gaps).
-        Defaults to -1
-
-    --bwa.d
-        Disallow a long deletion within so many bp towards the 3'-end. Defaults to 16
-
-    --bwa.i
-        Dissalow an indel within so many bp towards the ends. Defaults to 5
-
-    --bwa.k
-        Maximum edit distance in the seed
-
-    --bwa.M
-        Mismatch penalty. Defaults to 3
-
-    --bwa.O
-        Gap open penalty. Defaults to 4
-
-    --bwa.E
-        Gap extension penalty. Defaults to 4
-
 BLAST:
-    --blast.db
+    --blast-db
         Path to blast databases. REQUIRED. It is also recommended to place this value in the
         BLASTDB environment variable.
-
-    --blast.max_hsps
-        Max hits from blast. Defaults to 10
-
-    --blast.num_alignments
-        Max alignments from blast. Defaults to 5
-
-    --blast.outfmt
-        Output format of blast. Defaults to
-        '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
-        It is highly recommended to not alter this, as a heading will be generated based on
-        the default value
-
-    --blast.evalue
-        The maximum e-value allowed. Defaults to 1e-5
 """
 exit 0
 }
 
+params.kmerLength = 35
 params.readsfolder = "."
 params.threads = 4
 params.outfolder = ""
@@ -209,23 +145,14 @@ process trim {
     file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into PreKrakenReads
 
     script:
-    // Specifying Trimmomatic paramaters on the command line can sometimes wipe
-    // out the IlluminaClip settings, so restore them if absent
-    if ( params.trimmomatic.fastaWithAdapters == null ) {
-        params.trimmomatic.fastaWithAdapters = 'NexteraPE-PE.fa'
-        params.trimmomatic.seedMismatches = 2
-        params.trimmomatic.palindromeClipThreshold = 30
-        params.trimmomatic.simpleClipThreshold = 10
-    }
-
     // Put together the trimmomatic parameters
-    ILLUMINACLIP = "ILLUMINACLIP:${params.trimmomatic.fastaWithAdapters}:${params.trimmomatic.seedMismatches}:${params.trimmomatic.palindromeClipThreshold}:${params.trimmomatic.simpleClipThreshold}"
-    SLIDINGWINDOW = ( params.trimmomatic.windowSize > 0 && params.trimmomatic.requiredQuality > 0 ) ? "SLIDINGWINDOW:${params.trimmomatic.windowSize}:${params.trimmomatic.requiredQuality}" : ""
-    LEADING = ( params.trimmomatic.leading > 0 ) ? "LEADING:${params.trimmomatic.leading}" : ""
-    TRAILING = ( params.trimmomatic.trailing > 0 ) ? "TRAILING:${params.trimmomatic.trailing}" : ""
-    CROP = ( params.trimmomatic.crop > 0 ) ? "CROP:${params.trimmomatic.crop}" : ""
-    HEADCROP = ( params.trimmomatic.headcrop > 0 ) ? "HEADCROP:${params.trimmomatic.headcrop}" : ""
-    MINLEN = ( params.trimmomatic.minlen > 0 ) ? "MINLEN:${params.trimmomatic.minlen}" : ""
+    ILLUMINACLIP = "ILLUMINACLIP:${params.trimAdapters}:${params.trimMismatches}:${params.trimPclip}:${params.trimClip}"
+    SLIDINGWINDOW = ( params.trimWinsize > 0 && params.trimWinqual > 0 ) ? "SLIDINGWINDOW:${params.trimWinsize}:${params.trimWinqual}" : ""
+    LEADING = ( params.trimLeading > 0 ) ? "LEADING:${params.trimLeading}" : ""
+    TRAILING = ( params.trimTrailing > 0 ) ? "TRAILING:${params.trimTrailing}" : ""
+    CROP = ( params.trimCrop > 0 ) ? "CROP:${params.trimCrop}" : ""
+    HEADCROP = ( params.trimHeadcrop > 0 ) ? "HEADCROP:${params.trimHeadcrop}" : ""
+    MINLEN = ( params.trimMinlen > 0 ) ? "MINLEN:${params.trimMinlen}" : ""
     trimsteps = ILLUMINACLIP + ' ' + SLIDINGWINDOW + ' ' + LEADING + ' ' + TRAILING + ' ' + CROP + ' ' + HEADCROP + ' ' + MINLEN
     """
     trimmomatic PE -threads ${params.threads} \
@@ -252,7 +179,7 @@ process kraken {
     script:
     quickflag = params.dev ? '--quick' : ''
     """
-    kraken2 --db ${params.kraken.db} --threads ${params.threads} --paired ${quickflag} \
+    kraken2 --db ${params.krakenDb} --threads ${params.threads} --paired ${quickflag} \
         --report "${sampleName}.krpt" \
         --output "${sampleName}.kraken" \
         ${readsFiles}
@@ -356,21 +283,10 @@ process ray {
     tuple val(sampleName), val(assembler), file('Contigs.fasta'), file(readsFiles) into RayContigsForRemapping
 
     script:
-    // Prevent command line from clobbering preset values
-    kmerlength               = params.ray.kmerlength ?: 21
-    minimumSeedLength        = params.ray.minimumSeedLength ?: 100
-    minimumContigLength      = params.ray.minimumContigLength ?: 100
-    maximumSeedCoverageDepth = params.ray.maximumSeedCoverageDepth ?: 4294967295
-    minimumSeedCoverageDepth = params.ray.minimumSeedCoverageDepth ?: 0
-
     // Export the assembler for future combined steps
     assembler = 'ray'
     """
-    mpiexec -n ${params.threads} Ray -k ${kmerlength} \
-        -minimumSeedLength ${minimumSeedLength} \
-        -minimumContigLength ${minimumContigLength} \
-        -maximumSeedCoverageDepth ${maximumSeedCoverageDepth} \
-        -minimumSeedCoverageDepth ${minimumSeedCoverageDepth} -p ${readsFiles}
+    mpiexec -n ${params.threads} Ray -k ${params.kmerLength} -p ${readsFiles}
     mv RayOutput/Contigs.fasta .
     """
 }
@@ -387,40 +303,9 @@ process iva {
     tuple val(sampleName), val(assembler), file('contigs.fasta'), file(readsFiles) into IVAContigsForRemapping
 
     script:
-    // Prevent parameter clobbering
-    k                  = params.iva.k ?: 19
-    s                  = params.iva.s ?: 11
-    y                  = params.iva.y ?: 0.5
-    ctg_first_trim     = params.iva.ctg_first_trim ?: 25
-    ctg_iter_trim      = params.iva.ctg_iter_trim ?: 10
-    ext_min_cov        = params.iva.ext_min_cov ?: 10
-    ext_min_ratio      = params.iva.ext_min_ratio ?: 4
-    ext_max_bases      = params.iva.ext_max_bases ?: 100
-    ext_min_clip       = params.iva.ext_min_clip ?: 3
-    max_contigs        = params.iva.max_contigs ?: 50
-    seed_min_kmer_cov  = params.iva.seed_min_kmer_cov ?: 25
-    seed_max_kmer_cov  = params.iva.seed_max_kmer_cov ?: 1000000
-    seed_ext_max_bases = params.iva.seed_ext_max_bases ?: 50
-    seed_ext_min_cov   = params.iva.seed_ext_min_cov ?: 10
-    seed_ext_min_ratio = params.iva.seed_ext_min_ratio ?: 4
-    max_insert         = params.iva.max_insert ?: 800
     assembler = 'iva'
     """
-    iva -t ${params.threads} -k ${k} -s ${s} -y ${y} \
-        --ctg_first_trim ${ctg_first_trim} \
-        --ctg_iter_trim ${ctg_iter_trim} \
-        --ext_min_cov ${ext_min_cov} \
-        --ext_min_ratio ${ext_min_ratio} \
-        --ext_max_bases ${ext_max_bases} \
-        --ext_min_clip ${ext_min_clip} \
-        --max_contigs ${max_contigs} \
-        --seed_min_kmer_cov ${seed_min_kmer_cov} \
-        --seed_max_kmer_cov ${seed_max_kmer_cov} \
-        --seed_ext_max_bases ${seed_ext_max_bases} \
-        --seed_ext_min_cov ${seed_ext_min_cov} \
-        --seed_ext_min_ratio ${seed_ext_min_ratio} \
-        --max_insert ${max_insert} \
-        -f ${readsFiles[0]} -r ${readsFiles[1]} out
+    iva -t ${params.threads} -k ${params.kmerLength} -f ${readsFiles[0]} -r ${readsFiles[1]} out
     mv out/contigs.fasta .
     """
 }
@@ -439,9 +324,9 @@ process metavelvet {
     script:
     assembler = 'metavelvet'
     """
-    velveth out 51 -fastq.gz -longPaired -separate ${readsFiles}
     export OMP_NUM_THREADS=${params.threads}
     export OMP_THREAD_LIMIT=${params.threads}
+    velveth out ${params.kmerLength} -fastq.gz -shortPaired -separate ${readsFiles}
     velvetg out -exp_cov auto -ins_length 260
     meta-velvetg out
     mv out/meta-velvetg.contigs.fa .
@@ -497,43 +382,13 @@ process bwa {
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
 
     script:
-    // Fix clobbered parameters
-    n = params.bwa.n ?: 0.04
-    o = params.bwa.o ?: 1
-    e = params.bwa.e ?: -1
-    d = params.bwa.d ?: 16
-    i = params.bwa.i ?: 5
-    k = params.bwa.k ?: 2
-    M = params.bwa.M ?: 3
-    O = params.bwa.O ?: 4
-    E = params.bwa.E ?: 4
     """
     cp ${readsFiles[0]} read1.fastq.gz
     cp ${readsFiles[1]} read2.fastq.gz
     gunzip read1.fastq.gz read2.fastq.gz
     bwa index ${contigs}
-    bwa aln \
-        -n ${n} \
-        -o ${o} \
-        -e ${e} \
-        -d ${d} \
-        -i ${i} \
-        -k ${k} \
-        -M ${M} \
-        -O ${O} \
-        -E ${E} \
-        -t ${params.threads} ${contigs} read1.fastq > ${sampleName}.1.sai
-    bwa aln \
-        -n ${n} \
-        -o ${o} \
-        -e ${e} \
-        -d ${d} \
-        -i ${i} \
-        -k ${k} \
-        -M ${M} \
-        -O ${O} \
-        -E ${E} \
-        -t ${params.threads} ${contigs} read2.fastq > ${sampleName}.2.sai
+    bwa aln -t ${params.threads} ${contigs} read1.fastq > ${sampleName}.1.sai
+    bwa aln -t ${params.threads} ${contigs} read2.fastq > ${sampleName}.2.sai
     bwa sampe ${contigs} \
         ${sampleName}.1.sai ${sampleName}.2.sai \
         ${readsFiles} > ${sampleName}_${assembler}.sam
@@ -609,16 +464,15 @@ process blast {
 
     script:
     // Prevent parameter clobbering
-    max_hsps       = params.blast.max_hsps       ?: 10
-    num_alignments = params.blast.num_alignments ?: 5
-    outfmt         = params.blast.outfmt         ?: '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
-    evalue         = params.blast.evalue         ?: 1e-5
+    max_hsps       = 10
+    num_alignments = 5
+    outfmt         = '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
+    evalue         = 1e-5
 
     // Pick the faster algorithm if this is a development cycle, otherwise
     // the titular program is also the name of the algorithm
-    algorithm = program
+    algorithm = ( program == 'blastn' ) ? 'megablast' : 'blastx-fast'
     if ( params.dev ) {
-        algorithm = ( program == 'blastn' ) ? 'megablast' : 'blastx-fast'
         max_hsps = 1
         num_alignments = 1
         evalue = 1e-50
@@ -632,7 +486,7 @@ process blast {
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
     ${program} -query ${readsFiles} \
-        -db ${params.blast.db}/${dbExtension} \
+        -db ${params.blastDb}/${dbExtension} \
         -max_hsps ${max_hsps} \
         -num_alignments ${num_alignments} \
         -outfmt ${outfmt} \
