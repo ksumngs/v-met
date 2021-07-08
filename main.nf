@@ -65,7 +65,7 @@ else {
 Channel
     .fromPath("${params.readsfolder}/*.{fastq,fq}.gz")
     .take( params.dev ? params.devinputs : -1 )
-    .set{ RawReads; UnclassifiedReads }
+    .into{ RawReads; UnclassifiedReads }
 
 // Classify reads using Kraken
 process kraken {
