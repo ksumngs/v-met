@@ -154,7 +154,6 @@ process filterreads {
 
     output:
     tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForRay
-    tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForIVA
     tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForMetaVelvet
     tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForAbyss
     tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForTrinity
