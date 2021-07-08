@@ -222,16 +222,16 @@ process abyss {
     cpus params.threads
 
     input:
-    set val(sampleName), file(readsFiles) from ReadsForAbyss
+    set val(sampleName), file(readsFile) from ReadsForAbyss
 
     output:
     tuple val(sampleName), val(assembler), 'contigs.fa' into AbyssContigsForBlast
-    tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFiles) into AbyssContigsForRemapping
+    tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFile) into AbyssContigsForRemapping
 
     script:
     assembler = 'abyss'
     """
-    abyss-pe np=${params.threads} name=${sampleName} k=21 in="${readsFiles}"
+    abyss-pe np=${params.threads} name=${sampleName} k=21 se="${readsFile}"
     cp ${sampleName}-contigs.fa contigs.fa
     """
 }
