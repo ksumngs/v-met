@@ -149,28 +149,28 @@ process filterreads {
     cpus 1
 
     input:
-    file(readsFiles) from UnclassifiedReads
+    file(readsFile) from UnclassifiedReads
     set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
 
     output:
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForMetaVelvet
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForAbyss
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForTrinity
-    file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
+    tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForRay
+    tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForIVA
+    tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForMetaVelvet
+    tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForAbyss
+    tuple sampleName, file("${sampleName}_filtered.fastq.gz") into ReadsForTrinity
+    file("${sampleName}_filtered_.fastq.gz") into CompressedReadsForRemapping
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
     // and 10239 is viral reads
     script:
     """
     extract_kraken_reads.py -k ${krakenFile} \
-        -s1 ${readsFiles[0]} -s2 ${readsFiles[1]} \
+        -s ${readsFile} \
         -r ${krakenReport} \
         -t 0 10239 --include-children \
         --fastq-output \
-        -o ${sampleName}_filtered_R1.fastq -o2 ${sampleName}_filtered_R2.fastq
-    gzip ${sampleName}_filtered_{R1,R2}.fastq
+        -o ${sampleName}_filtered.fastq
+    gzip ${sampleName}_filtered.fastq
     """
 
 }
