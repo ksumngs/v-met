@@ -63,7 +63,7 @@ else {
 
 // Bring in the reads files
 Channel
-    .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.gz")
+    .fromPath("${params.readsfolder}/*.{fastq,fq}.gz")
     .take( params.dev ? params.devinputs : -1 )
     .set{ RawReads; UnclassifiedReads }
 
