@@ -1,6 +1,8 @@
 #!/usr/bin/env nextflow
 
-/*
+if (params.help) {
+    log.info \
+    """
 NAME
     viral-metagenomics-pipeline - Automated analysis of viral reads in metagenomics samples
 
@@ -17,9 +19,6 @@ OPTIONS
         Number of threads to process each sample with. Can't be adjusted on a per-process
         basis. Defaults to 4
 
-    --blastdb
-        The storage location of the NCBI BLAST database. Defaults to /blastdb
-
     --runname
         A friendly identifier to describe the samples being analyzed. Defaults to
         'viral-metagenomics'
@@ -33,12 +32,15 @@ OPTIONS
     --devinputs
         The number of inputs to take in when using --dev
 
+    --kmer-length
+        The length of kmers when assembling. Defaults to 35
+
 PROCESS-SPECIFIC OPTIONS
 Trimmomatic:
     Please see https://github.com/usadellab/Trimmomatic for full documentation and
     descriptions of the trimming steps.
 
-    --trimmomatic.fastaWithAdapters
+    --trim-adapters
         Passed to ILLUMINACLIP trimming step. Specifies the path to a fasta file containing
         all the adapters. Valid values are:
             'NexteraPE-PE.fa'
@@ -49,172 +51,62 @@ Trimmomatic:
         Trimmomatic documentation and ensure that the location of the adapter is available
         to the container running Trimmomatic
 
-    --trimmomatic.seedMismatches
+    --trim-mismatches
         Passed to ILLUMINACLIP trimming step. Specifies the maximum mismatch count which
         will still allow a full adapter match. Defaults to 2
 
-    --trimmomatic.palindromeClipThreshold
+    --trim-pclip
         Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between the
         two reads must be for PE palindrome read alignment. Defaults to 30
 
-    --trimmomatic.simpleClipThreshold
+    --trim-clip
         Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between any
         adapter sequence must be against a read. Defaults to 10
 
-    --trimmomatic.windowSize
+    --trim-winsize
         Passed to SLIDINGWINDOW trimming step. Specifies the number of bases to average
-        across. If used, --trimmomatic.requiredQuality must also be specified.
+        across. If used, --trim-winqual must also be specified.
 
-    --trimmomatic.requiredQuality
+    --trim-winqual
         Passed to the SLIDINGWINDOW trimming step. Specifies the average base quality
-        required. If used, --trimmomatic.windowSize must also be specified.
+        required. If used, --trim-winsize must also be specified.
 
-    --trimmomatic.leading
+    --trim-leading
         Passed to the LEADING trimming step. Specifies the minimum quality required to keep
         a base
 
-    --trimmomatic.trailing
+    --trim-trailing
         Passed to the TRAILING trimming step. Specifies the minimum quality required to keep
         a base
 
-    --trimmomatic.crop
+    --trim-crop
         Passed to the CROP trimming step. The number of bases to keep, from the start of
         the read
 
-    --trimmomatic.headcrop
+    --trim-headcrop
         Passed to the HEADCROP trimming step. The number of bases to remove from the start
         of the read
 
-    --trimmomatic.minlen
+    --trim-minlen
         Passed to the MINLEN trimming step. Specifies the minimum length of reads to
         be kept.
-
-SeqPurge:
-    See https://github.com/imgag/ngs-bits/blob/master/doc/tools/SeqPurge.md for full
-    parameter descriptions.
-    --seqpurge.a1
-        Forward adapter sequence (at least 15 bases). Defaults
-        to 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
-
-    --seqpurge.a2
-        Reverse adapter sequence (at least 15 bases). Defaults
-        to 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'
-
-    --seqpurge.match_perc
-        Minimum percentage of matching bases for sequence/adapter matches. Defaults to 80
-
-    --seqpurge.mep
-        Maximum error probability of insert and adapter matches. Defaults to 1e-6
-
-    --seqpurge.qcut
-        Quality trimming cutoff for trimming from the end of reads using a sliding window
-        approach. Set to 0 to disable. Defaults to 15
-
-    --seqpurge.qwin
-        Quality trimming window size. Defaults to 5
-
-    --seqpurge.qoff
-        Quality trimming FASTQ score offset. Defaults to 33
-
-    --seqpurge.ncut
-        Number of subsequent Ns to trimmed using a sliding window approach from the front of
-        reads. Set to 0 to disable. Defaults to 7
-
-    --seqpurge.min_len
-        Minimum read length after adapter trimming. Shorter reads are discarded. Defaults
-        to 30
 
 Kraken:
     See https://github.com/DerrickWood/kraken2/wiki/Manual for full documentation of
     Kraken 2's available options
-    --kraken.db
+    --kraken-db
         Path to Kraken 2 database. REQUIRED
 
-Ray:
-    See https://github.com/sebhtml/ray/blob/master/MANUAL_PAGE.txt for full documentation of
-    Ray's available options
-    --ray.kmerlength
-        Selects the length of k-mers. It must be odd because reverse-complement vertices are
-        stored together. Larger k-mers utilise more memory. Defaults to 21
-
-    --ray.minimumSeedLength
-        Changes the minimum seed length. Defaults to 100
-
-    --ray.minimumContigLength
-        Changes the minimum contig length. Defaults to 100
-
-    --ray.maximumSeedCoverageDepth
-        Ignores any seed with a coverage depth above this threshold. Defaults to 4294967295
-
-    --ray.minimumSeedCoverageDepth
-        Sets the minimum seed coverage depth. Any path with a coverage depth lower than this
-        will be discarded. Defaults to 0
-
-BWA:
-    See http://bio-bwa.sourceforge.net/bwa.shtml for full documentation of BWA's available
-    options. Note that these options only apply to the alignment step.
-    --bwa.n
-        Maximum edit distance if the value is INT, or the fraction of missing alignments
-        given 2% uniform base error rate if FLOAT. In the latter case, the maximum edit
-        distance is automatically chosen for different read lengths. Defaults to 0.04
-
-    --bwa.o
-        Maximum number of gap opens. Defaults to 1
-
-    --bwa.e
-        Maximum number of gap extensions, -1 for k-difference mode (disallowing long gaps).
-        Defaults to -1
-
-    --bwa.d
-        Disallow a long deletion within so many bp towards the 3'-end. Defaults to 16
-
-    --bwa.i
-        Dissalow an indel within so many bp towards the ends. Defaults to 5
-
-    --bwa.k
-        Maximum edit distance in the seed
-
-    --bwa.M
-        Mismatch penalty. Defaults to 3
-
-    --bwa.O
-        Gap open penalty. Defaults to 4
-
-    --bwa.E
-        Gap extension penalty. Defaults to 4
-
 BLAST:
-    --blast.db
+    --blast-db
         Path to blast databases. REQUIRED. It is also recommended to place this value in the
         BLASTDB environment variable.
-
-    --blast.max_hsps
-        Max hits from blast. Defaults to 10
-
-    --blast.num_alignments
-        Max alignments from blast. Defaults to 5
-
-    --blast.outfmt
-        Output format of blast. Defaults to
-        '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
-        It is highly recommended to not alter this, as a heading will be generated based on
-        the default value
-
-    --blast.evalue
-        The maximum e-value allowed. Defaults to 1e-5
-*/
-
-params.readsfolder = "."
-params.threads = 4
-params.outfolder = ""
-params.runname = "viral-metagenomics"
-params.dev = false
-params.devinputs = 2
+"""
+exit 0
+}
 
 // Make params persist that need to
-NumThreads = params.threads
 RunName = params.runname
-BlastAlgorithms = ['blastn', 'blastx']
 
 // Create an outfolder name if one wasn't provided
 if(params.outfolder == "") {
@@ -231,34 +123,27 @@ Channel
     .set{ RawReads }
 
 // First trim, using Trimmomatic
-process trimmomatic {
+process trim {
+    cpus params.threads
     input:
     set val(sampleName), file(readsFiles) from RawReads
 
     output:
-    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into IntermediateTrimmedReads
+    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into TrimmedReads
+    file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into PreKrakenReads
 
     script:
-    // Specifying Trimmomatic paramaters on the command line can sometimes wipe
-    // out the IlluminaClip settings, so restore them if absent
-    if ( params.trimmomatic.fastaWithAdapters == null ) {
-        params.trimmomatic.fastaWithAdapters = 'NexteraPE-PE.fa'
-        params.trimmomatic.seedMismatches = 2
-        params.trimmomatic.palindromeClipThreshold = 30
-        params.trimmomatic.simpleClipThreshold = 10
-    }
-
     // Put together the trimmomatic parameters
-    ILLUMINACLIP = "ILLUMINACLIP:${params.trimmomatic.fastaWithAdapters}:${params.trimmomatic.seedMismatches}:${params.trimmomatic.palindromeClipThreshold}:${params.trimmomatic.simpleClipThreshold}"
-    SLIDINGWINDOW = ( params.trimmomatic.windowSize > 0 && params.trimmomatic.requiredQuality > 0 ) ? "SLIDINGWINDOW:${params.trimmomatic.windowSize}:${params.trimmomatic.requiredQuality}" : ""
-    LEADING = ( params.trimmomatic.leading > 0 ) ? "LEADING:${params.trimmomatic.leading}" : ""
-    TRAILING = ( params.trimmomatic.trailing > 0 ) ? "TRAILING:${params.trimmomatic.trailing}" : ""
-    CROP = ( params.trimmomatic.crop > 0 ) ? "CROP:${params.trimmomatic.crop}" : ""
-    HEADCROP = ( params.trimmomatic.headcrop > 0 ) ? "HEADCROP:${params.trimmomatic.headcrop}" : ""
-    MINLEN = ( params.trimmomatic.minlen > 0 ) ? "MINLEN:${params.trimmomatic.minlen}" : ""
+    ILLUMINACLIP = "ILLUMINACLIP:${params.trimAdapters}:${params.trimMismatches}:${params.trimPclip}:${params.trimClip}"
+    SLIDINGWINDOW = ( params.trimWinsize > 0 && params.trimWinqual > 0 ) ? "SLIDINGWINDOW:${params.trimWinsize}:${params.trimWinqual}" : ""
+    LEADING = ( params.trimLeading > 0 ) ? "LEADING:${params.trimLeading}" : ""
+    TRAILING = ( params.trimTrailing > 0 ) ? "TRAILING:${params.trimTrailing}" : ""
+    CROP = ( params.trimCrop > 0 ) ? "CROP:${params.trimCrop}" : ""
+    HEADCROP = ( params.trimHeadcrop > 0 ) ? "HEADCROP:${params.trimHeadcrop}" : ""
+    MINLEN = ( params.trimMinlen > 0 ) ? "MINLEN:${params.trimMinlen}" : ""
     trimsteps = ILLUMINACLIP + ' ' + SLIDINGWINDOW + ' ' + LEADING + ' ' + TRAILING + ' ' + CROP + ' ' + HEADCROP + ' ' + MINLEN
     """
-    trimmomatic PE -threads ${NumThreads} \
+    trimmomatic PE -threads ${params.threads} \
         ${readsFiles} \
         ${sampleName}_trimmomatic_R1.fastq.gz \
         /dev/null \
@@ -268,45 +153,12 @@ process trimmomatic {
     """
 }
 
-// Secord trim, using SeqPurge
-process seqpurge {
-    input:
-    set val(sampleName), file(readsFiles) from IntermediateTrimmedReads
-
-    // These trimmed reads start a branching path:
-    // First branch: get classified by Kraken and produce visuals
-    // Secord branch: based on classification, go to de novo assembly
-    output:
-    tuple sampleName, file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into FullyTrimmedReads
-    file("${sampleName}_seqpurge_{R1,R2}.fastq.gz") into PreKrakenReads
-
-    script:
-    // Prevent clobbered parameters
-    a1 = params.seqpurge.a1 ?: 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA'
-    a2 = params.seqpurge.a2 ?: 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT'
-    match_perc = params.seqpurge.match_perc ?: 80
-    mep = params.seqpurge.mep ?: 1e-6
-    qcut = params.seqpurge.qcut ?: 15
-    qwin = params.seqpurge.qwin ?: 5
-    qoff = params.seqpurge.qoff ?: 33
-    ncut = params.seqpurge.ncut ?: 7
-    min_len = params.seqpurge.min_len ?: 30
-
-    // Run SeqPurge
-    """
-    SeqPurge -threads ${NumThreads} \
-        -a1 ${a1} -a2 ${a2} -match_perc ${match_perc} -mep ${mep} -qcut ${qcut} \
-        -qwin ${qwin} -qoff ${qoff} -ncut ${ncut} -min_len ${min_len} -in1 \
-        ${readsFiles[0]} -in2  ${readsFiles[1]} \
-        -out1 ${sampleName}_seqpurge_R1.fastq.gz \
-        -out2 ${sampleName}_seqpurge_R2.fastq.gz
-    """
-}
-
 // Classify reads using Kraken
 process kraken {
+    cpus params.threads
+
     input:
-    set val(sampleName), file(readsFiles) from FullyTrimmedReads
+    set val(sampleName), file(readsFiles) from TrimmedReads
 
     output:
     tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
@@ -315,7 +167,7 @@ process kraken {
     script:
     quickflag = params.dev ? '--quick' : ''
     """
-    kraken2 --db ${params.kraken.db} --threads ${NumThreads} --paired ${quickflag} \
+    kraken2 --db ${params.krakenDb} --threads ${params.threads} --paired ${quickflag} \
         --report "${sampleName}.krpt" \
         --output "${sampleName}.kraken" \
         ${readsFiles}
@@ -325,6 +177,8 @@ process kraken {
 // Convert the kraken reports to krona input files using KrakenTools then
 // prettify them using unix tools
 process kraken2krona {
+    cpus 1
+
     input:
     set val(sampleName), file(krakenReport) from KrakenVisuals
 
@@ -354,6 +208,8 @@ process kraken2krona {
 // Collect all of the krona input files and convert them to a single graphical
 // webpage to ship to the user
 process krona {
+    cpus 1
+
     // This is a final step: publish it
     publishDir OutFolder, mode: 'copy'
 
@@ -374,6 +230,8 @@ process krona {
 // Pull the viral reads and any unclassified reads from the original reads
 // files for futher downstream processing using KrakenTools
 process filterreads {
+    cpus 1
+
     input:
     file(readsFiles) from PreKrakenReads
     set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
@@ -381,6 +239,9 @@ process filterreads {
     output:
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForMetaVelvet
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForAbyss
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForTrinity
     file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
@@ -400,6 +261,8 @@ process filterreads {
 
 // Assemble into contigs using Ray
 process ray {
+    cpus params.threads
+
     input:
     set val(sampleName), file(readsFiles) from ReadsForRay
 
@@ -408,27 +271,18 @@ process ray {
     tuple val(sampleName), val(assembler), file('Contigs.fasta'), file(readsFiles) into RayContigsForRemapping
 
     script:
-    // Prevent command line from clobbering preset values
-    kmerlength               = params.ray.kmerlength ?: 21
-    minimumSeedLength        = params.ray.minimumSeedLength ?: 100
-    minimumContigLength      = params.ray.minimumContigLength ?: 100
-    maximumSeedCoverageDepth = params.ray.maximumSeedCoverageDepth ?: 4294967295
-    minimumSeedCoverageDepth = params.ray.minimumSeedCoverageDepth ?: 0
-
     // Export the assembler for future combined steps
     assembler = 'ray'
     """
-    mpiexec -n ${NumThreads} Ray -k ${kmerlength} \
-        -minimumSeedLength ${minimumSeedLength} \
-        -minimumContigLength ${minimumContigLength} \
-        -maximumSeedCoverageDepth ${maximumSeedCoverageDepth} \
-        -minimumSeedCoverageDepth ${minimumSeedCoverageDepth} -p ${readsFiles}
+    mpiexec -n ${params.threads} Ray -k ${params.kmerLength} -p ${readsFiles}
     mv RayOutput/Contigs.fasta .
     """
 }
 
 // Assemble into contigs using iva
 process iva {
+    cpus params.threads
+
     input:
     set val(sampleName), file(readsFiles) from ReadsForIVA
 
@@ -437,90 +291,92 @@ process iva {
     tuple val(sampleName), val(assembler), file('contigs.fasta'), file(readsFiles) into IVAContigsForRemapping
 
     script:
-    // Prevent parameter clobbering
-    k                  = params.iva.k ?: 19
-    s                  = params.iva.s ?: 11
-    y                  = params.iva.y ?: 0.5
-    ctg_first_trim     = params.iva.ctg_first_trim ?: 25
-    ctg_iter_trim      = params.iva.ctg_iter_trim ?: 10
-    ext_min_cov        = params.iva.ext_min_cov ?: 10
-    ext_min_ratio      = params.iva.ext_min_ratio ?: 4
-    ext_max_bases      = params.iva.ext_max_bases ?: 100
-    ext_min_clip       = params.iva.ext_min_clip ?: 3
-    max_contigs        = params.iva.max_contigs ?: 50
-    seed_min_kmer_cov  = params.iva.seed_min_kmer_cov ?: 25
-    seed_max_kmer_cov  = params.iva.seed_max_kmer_cov ?: 1000000
-    seed_ext_max_bases = params.iva.seed_ext_max_bases ?: 50
-    seed_ext_min_cov   = params.iva.seed_ext_min_cov ?: 10
-    seed_ext_min_ratio = params.iva.seed_ext_min_ratio ?: 4
-    max_insert         = params.iva.max_insert ?: 800
     assembler = 'iva'
     """
-    iva -t ${NumThreads} -k ${k} -s ${s} -y ${y} \
-        --ctg_first_trim ${ctg_first_trim} \
-        --ctg_iter_trim ${ctg_iter_trim} \
-        --ext_min_cov ${ext_min_cov} \
-        --ext_min_ratio ${ext_min_ratio} \
-        --ext_max_bases ${ext_max_bases} \
-        --ext_min_clip ${ext_min_clip} \
-        --max_contigs ${max_contigs} \
-        --seed_min_kmer_cov ${seed_min_kmer_cov} \
-        --seed_max_kmer_cov ${seed_max_kmer_cov} \
-        --seed_ext_max_bases ${seed_ext_max_bases} \
-        --seed_ext_min_cov ${seed_ext_min_cov} \
-        --seed_ext_min_ratio ${seed_ext_min_ratio} \
-        --max_insert ${max_insert} \
-        -f ${readsFiles[0]} -r ${readsFiles[1]} out
+    iva -t ${params.threads} -k ${params.kmerLength} -f ${readsFiles[0]} -r ${readsFiles[1]} out
     mv out/contigs.fasta .
+    """
+}
+
+// Assemble using MetaVelvet
+process metavelvet {
+    cpus params.threads
+
+    input:
+    set val(sampleName), file(readsFiles) from ReadsForMetaVelvet
+
+    output:
+    tuple val(sampleName), val(assembler), 'meta-velvetg.contigs.fa' into MetaVelvetContigsForBlast
+    tuple val(sampleName), val(assembler), file('meta-velvetg.contigs.fa'), file(readsFiles) into MetaVelvetContigsForRemapping
+
+    script:
+    assembler = 'metavelvet'
+    """
+    export OMP_NUM_THREADS=${params.threads}
+    export OMP_THREAD_LIMIT=${params.threads}
+    velveth out ${params.kmerLength} -fastq.gz -shortPaired -separate ${readsFiles}
+    velvetg out -exp_cov auto -ins_length 260
+    meta-velvetg out
+    mv out/meta-velvetg.contigs.fa .
+    """
+}
+
+// Assemble using Abyss
+process abyss {
+    cpus params.threads
+
+    input:
+    set val(sampleName), file(readsFiles) from ReadsForAbyss
+
+    output:
+    tuple val(sampleName), val(assembler), 'contigs.fa' into AbyssContigsForBlast
+    tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFiles) into AbyssContigsForRemapping
+
+    script:
+    assembler = 'abyss'
+    """
+    abyss-pe np=${params.threads} name=${sampleName} k=21 in="${readsFiles}"
+    cp ${sampleName}-contigs.fa contigs.fa
+    """
+}
+
+// Assemble using Trinity
+process trinity {
+    cpus params.threads
+
+    input:
+    set val(sampleName), file(readsFiles) from ReadsForTrinity
+
+    output:
+    tuple val(sampleName), val(assembler), 'Trinity.fasta' into TrinityContigsForBlast
+    tuple val(sampleName), val(assembler), file('Trinity.fasta'), file(readsFiles) into TrinityContigsForRemapping
+
+    script:
+    assembler = 'trinity'
+    """
+    Trinity --seqType fq --left ${readsFiles[0]} --right ${readsFiles[1]} --CPU ${params.threads} --max_memory 10G --output trinity
+    mv trinity/Trinity.fasta .
     """
 }
 
 // Remap contigs using BWA
 process bwa {
+    cpus params.threads
+
     input:
-    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping)
+    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping, TrinityContigsForRemapping)
 
     output:
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
 
     script:
-    // Fix clobbered parameters
-    n = params.bwa.n ?: 0.04
-    o = params.bwa.o ?: 1
-    e = params.bwa.e ?: -1
-    d = params.bwa.d ?: 16
-    i = params.bwa.i ?: 5
-    k = params.bwa.k ?: 2
-    M = params.bwa.M ?: 3
-    O = params.bwa.O ?: 4
-    E = params.bwa.E ?: 4
     """
     cp ${readsFiles[0]} read1.fastq.gz
     cp ${readsFiles[1]} read2.fastq.gz
     gunzip read1.fastq.gz read2.fastq.gz
     bwa index ${contigs}
-    bwa aln \
-        -n ${n} \
-        -o ${o} \
-        -e ${e} \
-        -d ${d} \
-        -i ${i} \
-        -k ${k} \
-        -M ${M} \
-        -O ${O} \
-        -E ${E} \
-        -t ${NumThreads} ${contigs} read1.fastq > ${sampleName}.1.sai
-    bwa aln \
-        -n ${n} \
-        -o ${o} \
-        -e ${e} \
-        -d ${d} \
-        -i ${i} \
-        -k ${k} \
-        -M ${M} \
-        -O ${O} \
-        -E ${E} \
-        -t ${NumThreads} ${contigs} read2.fastq > ${sampleName}.2.sai
+    bwa aln -t ${params.threads} ${contigs} read1.fastq > ${sampleName}.1.sai
+    bwa aln -t ${params.threads} ${contigs} read2.fastq > ${sampleName}.2.sai
     bwa sampe ${contigs} \
         ${sampleName}.1.sai ${sampleName}.2.sai \
         ${readsFiles} > ${sampleName}_${assembler}.sam
@@ -529,6 +385,8 @@ process bwa {
 
 // Sort and compress the sam files for visualization
 process sortsam {
+    cpus 1
+
     input:
     set val(sampleName), val(assembler), file(contigs), file(samfile) from RemappedReads
 
@@ -554,6 +412,8 @@ process sortsam {
 
 // Create a viewer of all the assembly files
 process assemblyview {
+    cpus 1
+
     publishDir OutFolder, mode: 'copy'
 
     input:
@@ -576,49 +436,44 @@ process assemblyview {
 
 // Blast contigs
 process blast {
+    cpus params.threads
+
     // This is a final step: publish it
     publishDir OutFolder, mode: 'copy'
 
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast)
-    each program from BlastAlgorithms
+    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast, TrinityContigsForBlast)
 
     output:
-    file("${RunName}_${sampleName}_${assembler}.${program}.tsv")
+    file("${RunName}_${sampleName}_${assembler}.blast.tsv")
 
     script:
-    // Prevent parameter clobbering
-    max_hsps       = params.blast.max_hsps       ?: 10
-    num_alignments = params.blast.num_alignments ?: 5
-    outfmt         = params.blast.outfmt         ?: '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
-    evalue         = params.blast.evalue         ?: 1e-5
+    // Separate parameters from script
+    max_hsps       = 10
+    num_alignments = 5
+    outfmt         = '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
+    evalue         = 1e-5
 
     // Pick the faster algorithm if this is a development cycle, otherwise
     // the titular program is also the name of the algorithm
-    algorithm = program
     if ( params.dev ) {
-        algorithm = ( program == 'blastn' ) ? 'megablast' : 'blastx-fast'
         max_hsps = 1
         num_alignments = 1
         evalue = 1e-50
     }
 
-    // Switch which database to read from
-    dbExtension = (program == 'blastn') ? 'nt' : 'nr'
-
     // Squash the filename into a single variable
-    outFile = "${RunName}_${sampleName}_${assembler}.${program}.tsv"
+    outFile = "${RunName}_${sampleName}_${assembler}.blast.tsv"
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
-    ${program} -query ${readsFiles} \
-        -db ${params.blast.db}/${dbExtension} \
+    blastn -query ${readsFiles} \
+        -db ${params.blastDb}/nt \
         -max_hsps ${max_hsps} \
         -num_alignments ${num_alignments} \
         -outfmt ${outfmt} \
         -evalue ${evalue} \
-        -num_threads ${NumThreads} \
-        -task ${algorithm} >> ${outFile}
+        -num_threads ${params.threads} >> ${outFile}
     """
 }
