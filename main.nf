@@ -66,7 +66,7 @@ Channel
     .fromPath("${params.readsfolder}/*.{fastq,fq}.gz")
     .take( params.dev ? params.devinputs : -1 )
     .map{ file -> tuple(file.simpleName, file) }
-    .into{ RawReads }
+    .set{ RawReads }
 
 // Classify reads using Kraken
 process kraken {
