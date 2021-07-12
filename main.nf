@@ -149,7 +149,7 @@ process filterreads {
     cpus 1
 
     input:
-    set val(sampledup), file(readsFile) from UnclassifiedReads
+    file(readsFile) from UnclassifiedReads
     set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
 
     output:
