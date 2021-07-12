@@ -66,7 +66,7 @@ Channel
     .fromPath("${params.readsfolder}/*.{fastq,fq}.gz")
     .take( params.dev ? params.devinputs : -1 )
     .map{ file -> tuple(file.simpleName, file) }
-    .into{ RawReads; UnclassifiedReads }
+    .into{ RawReads }
 
 // Classify reads using Kraken
 process kraken {
@@ -78,6 +78,7 @@ process kraken {
     output:
     tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
     tuple sampleName, file("${sampleName}.krpt") into KrakenVisuals
+    file(readsFile) into UnclassifiedReads
 
     script:
     quickflag = params.dev ? '--quick' : ''
