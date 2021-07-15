@@ -241,7 +241,6 @@ process filterreads {
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForMetaVelvet
     tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForAbyss
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForTrinity
     file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
@@ -340,31 +339,12 @@ process abyss {
     """
 }
 
-// Assemble using Trinity
-process trinity {
-    cpus params.threads
-
-    input:
-    set val(sampleName), file(readsFiles) from ReadsForTrinity
-
-    output:
-    tuple val(sampleName), val(assembler), 'Trinity.fasta' into TrinityContigsForBlast
-    tuple val(sampleName), val(assembler), file('Trinity.fasta'), file(readsFiles) into TrinityContigsForRemapping
-
-    script:
-    assembler = 'trinity'
-    """
-    Trinity --seqType fq --left ${readsFiles[0]} --right ${readsFiles[1]} --CPU ${params.threads} --max_memory 10G --output trinity
-    mv trinity/Trinity.fasta .
-    """
-}
-
 // Remap contigs using BWA
 process bwa {
     cpus params.threads
 
     input:
-    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping, TrinityContigsForRemapping)
+    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping)
 
     output:
     tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
@@ -444,7 +424,7 @@ process blast {
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast, TrinityContigsForBlast)
+    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast)
 
     output:
     file("${RunName}_${sampleName}_${assembler}.blast.tsv")
