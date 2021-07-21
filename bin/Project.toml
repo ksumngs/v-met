@@ -1,0 +1,5 @@
+[deps]
+ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
+CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
+FASTX = "c2308a5c-f048-11e8-3e8a-31650f418d12"
+TranscodingStreams = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"

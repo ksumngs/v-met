@@ -134,7 +134,7 @@ process trim {
 
     script:
     // Put together the trimmomatic parameters
-    ILLUMINACLIP = "ILLUMINACLIP:${params.trimAdapters}:${params.trimMismatches}:${params.trimPclip}:${params.trimClip}"
+    ILLUMINACLIP = "ILLUMINACLIP:/Trimmomatic-0.39/adapters/${params.trimAdapters}:${params.trimMismatches}:${params.trimPclip}:${params.trimClip}"
     SLIDINGWINDOW = ( params.trimWinsize > 0 && params.trimWinqual > 0 ) ? "SLIDINGWINDOW:${params.trimWinsize}:${params.trimWinqual}" : ""
     LEADING = ( params.trimLeading > 0 ) ? "LEADING:${params.trimLeading}" : ""
     TRAILING = ( params.trimTrailing > 0 ) ? "TRAILING:${params.trimTrailing}" : ""
@@ -237,11 +237,7 @@ process filterreads {
     set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
 
     output:
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForRay
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForIVA
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForMetaVelvet
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into ReadsForAbyss
-    file("${sampleName}_filtered_{R1,R2}.fastq.gz") into CompressedReadsForRemapping
+    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
     // and 10239 is viral reads
@@ -258,159 +254,19 @@ process filterreads {
 
 }
 
-// Assemble into contigs using Ray
-process ray {
-    cpus params.threads
-
-    input:
-    set val(sampleName), file(readsFiles) from ReadsForRay
-
-    output:
-    tuple val(sampleName), val(assembler), 'Contigs.fasta' into RayContigsForBlast
-    tuple val(sampleName), val(assembler), file('Contigs.fasta'), file(readsFiles) into RayContigsForRemapping
-
-    script:
-    // Export the assembler for future combined steps
-    assembler = 'ray'
-    """
-    mpiexec -n ${params.threads} Ray -k ${params.kmerLength} -p ${readsFiles}
-    mv RayOutput/Contigs.fasta .
-    """
-}
-
-// Assemble into contigs using iva
-process iva {
-    cpus params.threads
-
-    input:
-    set val(sampleName), file(readsFiles) from ReadsForIVA
-
-    output:
-    tuple val(sampleName), val(assembler), file('contigs.fasta') into IVAContigsForBlast
-    tuple val(sampleName), val(assembler), file('contigs.fasta'), file(readsFiles) into IVAContigsForRemapping
-
-    script:
-    assembler = 'iva'
-    """
-    iva -t ${params.threads} -k ${params.kmerLength} -f ${readsFiles[0]} -r ${readsFiles[1]} out
-    mv out/contigs.fasta .
-    """
-}
-
-// Assemble using MetaVelvet
-process metavelvet {
-    cpus params.threads
-
-    input:
-    set val(sampleName), file(readsFiles) from ReadsForMetaVelvet
-
-    output:
-    tuple val(sampleName), val(assembler), 'meta-velvetg.contigs.fa' into MetaVelvetContigsForBlast
-    tuple val(sampleName), val(assembler), file('meta-velvetg.contigs.fa'), file(readsFiles) into MetaVelvetContigsForRemapping
-
-    script:
-    assembler = 'metavelvet'
-    """
-    export OMP_NUM_THREADS=${params.threads}
-    export OMP_THREAD_LIMIT=${params.threads}
-    velveth out ${params.kmerLength} -fastq.gz -shortPaired -separate ${readsFiles}
-    velvetg out -exp_cov auto -ins_length 260
-    meta-velvetg out
-    mv out/meta-velvetg.contigs.fa .
-    """
-}
-
-// Assemble using Abyss
-process abyss {
-    cpus params.threads
-
-    input:
-    set val(sampleName), file(readsFiles) from ReadsForAbyss
-
-    output:
-    tuple val(sampleName), val(assembler), 'contigs.fa' into AbyssContigsForBlast
-    tuple val(sampleName), val(assembler), file('contigs.fa'), file(readsFiles) into AbyssContigsForRemapping
-
-    script:
-    assembler = 'abyss'
-    """
-    abyss-pe np=${params.threads} name=${sampleName} k=21 in="${readsFiles}"
-    cp ${sampleName}-contigs.fa contigs.fa
-    """
-}
-
-// Remap contigs using BWA
-process bwa {
-    cpus params.threads
-
-    input:
-    set val(sampleName), val(assembler), file(contigs), file(readsFiles) from RayContigsForRemapping.concat(IVAContigsForRemapping, MetaVelvetContigsForRemapping, AbyssContigsForRemapping)
-
-    output:
-    tuple val(sampleName), val(assembler), file(contigs), file("${sampleName}_${assembler}.sam") into RemappedReads
-
-    script:
-    """
-    cp ${readsFiles[0]} read1.fastq.gz
-    cp ${readsFiles[1]} read2.fastq.gz
-    gunzip read1.fastq.gz read2.fastq.gz
-    bwa index ${contigs}
-    bwa aln -t ${params.threads} ${contigs} read1.fastq > ${sampleName}.1.sai
-    bwa aln -t ${params.threads} ${contigs} read2.fastq > ${sampleName}.2.sai
-    bwa sampe ${contigs} \
-        ${sampleName}.1.sai ${sampleName}.2.sai \
-        ${readsFiles} > ${sampleName}_${assembler}.sam
-    """
-}
-
-// Sort and compress the sam files for visualization
-process sortsam {
+// Convert the viral and unclassified reads to fasta for blast
+process convert2fasta {
     cpus 1
 
     input:
-    set val(sampleName), val(assembler), file(contigs), file(samfile) from RemappedReads
+    set val(sampleName), file(readsFiles) from FilteredReads
 
     output:
-    tuple file("${sampleName}_${assembler}.contigs.fasta"), file("${sampleName}_${assembler}.contigs.fasta.fai"), file("${sampleName}_${assembler}.bam"), file("${sampleName}_${assembler}.bam.bai") into Assemblies
+    tuple val(sampleName), file("${sampleName}.fasta") into FilteredFastas
 
     script:
     """
-    # Rename the contigs file to a consistent format
-    mv ${contigs} ${sampleName}_${assembler}.contigs.fasta
-
-    # Create a contigs indes
-    samtools faidx ${sampleName}_${assembler}.contigs.fasta
-
-    # Convert and sort the sam file
-    samtools view -S -b ${samfile} > sample.bam
-    samtools sort sample.bam -o ${sampleName}_${assembler}.bam
-
-    # Index the sorted bam file
-    samtools index ${sampleName}_${assembler}.bam
-    """
-}
-
-// Create a viewer of all the assembly files
-process assemblyview {
-    cpus 1
-
-    publishDir OutFolder, mode: 'copy'
-
-    input:
-    file '*' from Assemblies.collect()
-
-    output:
-    file 'index.html'
-    file 'index.js'
-    file 'package.json'
-    file 'data/*'
-
-    script:
-    """
-    mkdir data
-    mv *.contigs.fasta *.contigs.fasta.fai *.bam *.bam.bai data
-    git clone https://github.com/MillironX/igv-bundler.git igv-bundler
-    mv igv-bundler/{index.html,index.js,package.json} .
+    fastx-converter -i ${readsFiles[0]} -n ${readsFiles[1]} -o ${sampleName}.fasta --interleave
     """
 }
 
@@ -424,10 +280,10 @@ process blast {
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), val(assembler), file(readsFiles) from RayContigsForBlast.concat(IVAContigsForBlast, MetaVelvetContigsForBlast, AbyssContigsForBlast)
+    set val(sampleName), file(readsFiles) from FilteredFastas
 
     output:
-    file("${RunName}_${sampleName}_${assembler}.blast.tsv")
+    file("${sampleName}.blast.tsv")
 
     script:
     // Separate parameters from script
@@ -445,15 +301,15 @@ process blast {
     }
 
     // Squash the filename into a single variable
-    outFile = "${RunName}_${sampleName}_${assembler}.blast.tsv"
+    outFile = "${sampleName}.blast.tsv"
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
-    blastn -query ${readsFiles} \
-        -db ${params.blastDb}/nt \
-        -max_hsps ${max_hsps} \
-        -num_alignments ${num_alignments} \
-        -outfmt ${outfmt} \
-        -evalue ${evalue} \
-        -num_threads ${params.threads} >> ${outFile}
+    #blastn -query ${readsFiles} \
+    #    -db ${params.blastDb}/nt \
+    #    -max_hsps ${max_hsps} \
+    #    -num_alignments ${num_alignments} \
+    #    -outfmt ${outfmt} \
+    #    -evalue ${evalue} \
+    #    -num_threads ${params.threads} >> ${outFile}
     """
 }
