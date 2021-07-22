@@ -304,12 +304,12 @@ process blast {
     outFile = "${sampleName}.blast.tsv"
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
-    #blastn -query ${readsFiles} \
-    #    -db ${params.blastDb}/nt \
-    #    -max_hsps ${max_hsps} \
-    #    -num_alignments ${num_alignments} \
-    #    -outfmt ${outfmt} \
-    #    -evalue ${evalue} \
-    #    -num_threads ${params.threads} >> ${outFile}
+    blastn -query ${readsFiles} \
+        -db ${params.blastDb}/nt \
+        -max_hsps ${max_hsps} \
+        -num_alignments ${num_alignments} \
+        -outfmt ${outfmt} \
+        -evalue ${evalue} \
+        -num_threads ${params.threads} >> ${outFile}
     """
 }
