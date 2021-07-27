@@ -19,10 +19,6 @@ OPTIONS
         Number of threads to process each sample with. Can't be adjusted on a per-process
         basis. Defaults to 4
 
-    --runname
-        A friendly identifier to describe the samples being analyzed. Defaults to
-        'viral-metagenomics'
-
     --outfolder
         The place where the final anlysis products will be stored. Defaults to runname_out
 
@@ -31,9 +27,6 @@ OPTIONS
 
     --devinputs
         The number of inputs to take in when using --dev
-
-    --kmer-length
-        The length of kmers when assembling. Defaults to 35
 
 PROCESS-SPECIFIC OPTIONS
 Trimmomatic:
@@ -90,17 +83,6 @@ Trimmomatic:
     --trim-minlen
         Passed to the MINLEN trimming step. Specifies the minimum length of reads to
         be kept.
-
-Kraken:
-    See https://github.com/DerrickWood/kraken2/wiki/Manual for full documentation of
-    Kraken 2's available options
-    --kraken-db
-        Path to Kraken 2 database. REQUIRED
-
-BLAST:
-    --blast-db
-        Path to blast databases. REQUIRED. It is also recommended to place this value in the
-        BLASTDB environment variable.
 """
 exit 0
 }
@@ -125,6 +107,9 @@ Channel
 // First trim, using Trimmomatic
 process trim {
     cpus params.threads
+
+    publishDir OutFolder, mode: 'copy'
+
     input:
     set val(sampleName), file(readsFiles) from RawReads
 
@@ -153,163 +138,4 @@ process trim {
     """
 }
 
-// Classify reads using Kraken
-process kraken {
-    cpus params.threads
-
-    input:
-    set val(sampleName), file(readsFiles) from TrimmedReads
-
-    output:
-    tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
-    tuple sampleName, file("${sampleName}.krpt") into KrakenVisuals
-
-    script:
-    quickflag = params.dev ? '--quick' : ''
-    """
-    kraken2 --db ${params.krakenDb} --threads ${params.threads} --paired ${quickflag} \
-        --report "${sampleName}.krpt" \
-        --output "${sampleName}.kraken" \
-        ${readsFiles}
-    """
-}
-
-// Convert the kraken reports to krona input files using KrakenTools then
-// prettify them using unix tools
-process kraken2krona {
-    cpus 1
-
-    input:
-    set val(sampleName), file(krakenReport) from KrakenVisuals
-
-    output:
-    file("${sampleName}.krona") into KronaText
-
-    shell:
-    '''
-    #!/bin/bash
-    # Using bash-specific loop syntax here, so shebang is required
-
-    # Convert the report using KrakenTools
-    kreport2krona.py -r !{krakenReport} -o !{sampleName}.krona
-
-    # KrakenTools creates ugly x__ prefixes for each of the taxonomic levels:
-    # let's remove each of those
-    LEVELS=(d k p c o f g s)
-    for L in "${LEVELS[@]}"; do
-        sed -i "s/${L}__//g" !{sampleName}.krona
-    done
-
-    # Also remove underscores that are standing in place of spaces
-    sed -i "s/_/ /g" !{sampleName}.krona
-    '''
-}
-
-// Collect all of the krona input files and convert them to a single graphical
-// webpage to ship to the user
-process krona {
-    cpus 1
-
-    // This is a final step: publish it
-    publishDir OutFolder, mode: 'copy'
-
-    input:
-    file '*' from KronaText.collect()
-
-    output:
-    file("krona.html")
-
-    // Name the file using the run name, and name the top level taxa as 'root'
-    // consistent with kraken
-    script:
-    """
-    ktImportText * -o krona.html -n root
-    """
-}
-
-// Pull the viral reads and any unclassified reads from the original reads
-// files for futher downstream processing using KrakenTools
-process filterreads {
-    cpus 1
-
-    input:
-    file(readsFiles) from PreKrakenReads
-    set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
-
-    output:
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads
-
-    // Although I haven't seen it documented anywhere, 0 is unclassified reads
-    // and 10239 is viral reads
-    script:
-    """
-    extract_kraken_reads.py -k ${krakenFile} \
-        -s1 ${readsFiles[0]} -s2 ${readsFiles[1]} \
-        -r ${krakenReport} \
-        -t 0 10239 --include-children \
-        --fastq-output \
-        -o ${sampleName}_filtered_R1.fastq -o2 ${sampleName}_filtered_R2.fastq
-    gzip ${sampleName}_filtered_{R1,R2}.fastq
-    """
-
-}
-
-// Convert the viral and unclassified reads to fasta for blast
-process convert2fasta {
-    cpus 1
-
-    input:
-    set val(sampleName), file(readsFiles) from FilteredReads
-
-    output:
-    tuple val(sampleName), file("${sampleName}.fasta") into FilteredFastas
-
-    script:
-    """
-    fastx-converter -i ${readsFiles[0]} -n ${readsFiles[1]} -o ${sampleName}.fasta --interleave
-    """
-}
-
-// Blast contigs
-process blast {
-    cpus params.threads
-
-    // This is a final step: publish it
-    publishDir OutFolder, mode: 'copy'
-
-    // Blast needs to happen on all contigs from all assemblers, and both
-    // blastn and blastx needs to be applied to all contigs
-    input:
-    set val(sampleName), file(readsFiles) from FilteredFastas
-
-    output:
-    file("${sampleName}.blast.tsv")
-
-    script:
-    // Separate parameters from script
-    max_hsps       = 10
-    num_alignments = 5
-    outfmt         = '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
-    evalue         = 1e-5
-
-    // Pick the faster algorithm if this is a development cycle, otherwise
-    // the titular program is also the name of the algorithm
-    if ( params.dev ) {
-        max_hsps = 1
-        num_alignments = 1
-        evalue = 1e-50
-    }
-
-    // Squash the filename into a single variable
-    outFile = "${sampleName}.blast.tsv"
-    """
-    echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
-    blastn -query ${readsFiles} \
-        -db ${params.blastDb}/nt \
-        -max_hsps ${max_hsps} \
-        -num_alignments ${num_alignments} \
-        -outfmt ${outfmt} \
-        -evalue ${evalue} \
-        -num_threads ${params.threads} >> ${outFile}
-    """
 }
