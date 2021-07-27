@@ -137,5 +137,3 @@ process trim {
         ${trimsteps}
     """
 }
-
-}
