@@ -106,6 +106,7 @@ Channel
     .set{ RawReads }
 }
 else {
+Channel
     .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}")
     .take( params.dev ? params.devinputs : -1 )
     .set{ RawReads }
