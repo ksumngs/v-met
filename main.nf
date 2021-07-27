@@ -99,10 +99,18 @@ else {
 }
 
 // Bring in the reads files
+if (params.gz){
 Channel
     .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.gz")
     .take( params.dev ? params.devinputs : -1 )
     .set{ RawReads }
+}
+else {
+    .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}")
+    .take( params.dev ? params.devinputs : -1 )
+    .set{ RawReads }
+}
+
 
 // First trim, using Trimmomatic
 process trim {
