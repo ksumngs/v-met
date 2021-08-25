@@ -266,7 +266,7 @@ process convert2fasta {
 
     script:
     """
-    fastx-converter -i ${readsFiles[0]} -n ${readsFiles[1]} -o ${sampleName}.fasta --interleave
+    seqtk mergepe ${readsFiles} | seqtk seq -a - > ${sampleName}.fasta
     """
 }
 
