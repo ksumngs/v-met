@@ -1,4 +1,5 @@
 #!/usr/bin/env nextflow
+nextflow.enable.dsl = 2
 
 if (params.help) {
     log.info \
@@ -115,22 +116,67 @@ if(params.outfolder == "") {
 else {
     OutFolder = params.outfolder
 }
+workflow {
+    // Bring in the reads files
+    RawReads = Channel
+        .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.gz")
+        .take( params.dev ? params.devinputs : -1 )
 
-// Bring in the reads files
-Channel
-    .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.gz")
-    .take( params.dev ? params.devinputs : -1 )
-    .set{ RawReads }
+    splitmeta(RawReads)
+    SampleNames = splitmeta.out.samplename
+    ReadsFiles  = splitmeta.out.readsfiles
+
+    trim(SampleNames, ReadsFiles)
+    TrimmedReads = trim.out
+
+    kraken(SampleNames, TrimmedReads)
+    KrakenFiles = kraken.out.krakenfile
+    KrakenReports = kraken.out.krakenreport
+
+    kraken2krona(SampleNames, KrakenReports)
+    KronaFiles = kraken2krona.out.kronafile.collect()
+
+    krona(KronaFiles)
+
+    filterreads(SampleNames, TrimmedReads, KrakenFiles, KrakenReports)
+    FilteredReads = filterreads.out.filteredreads
+
+    convert2fasta(SampleNames, FilteredReads)
+    FilteredFastas = convert2fasta.out.filteredfasta
+
+    blast(SampleNames, FilteredFastas)
+}
+
+process splitmeta {
+    cpus 1
+
+    input:
+    tuple val(givenName), file(readsFiles)
+
+    output:
+    val(sampleName), emit: samplename
+    path "out/*", emit: readsfiles
+
+    script:
+    sampleName = givenName.split('_')[0]
+    """
+    mkdir out
+    mv -n ${readsFiles[0]} out/${sampleName}_R1.fastq.gz
+    mv -n ${readsFiles[1]} out/${sampleName}_R2.fastq.gz
+    """
+}
+
 
 // First trim, using Trimmomatic
 process trim {
     cpus params.threads
+
     input:
-    set val(sampleName), file(readsFiles) from RawReads
+    val(sampleName)
+    file(readsFiles)
 
     output:
-    tuple sampleName, file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into TrimmedReads
-    file("${sampleName}_trimmomatic_{R1,R2}.fastq.gz") into PreKrakenReads
+    file("${sampleName}_trimmed_{R1,R2}.fastq.gz")
 
     script:
     // Put together the trimmomatic parameters
@@ -145,9 +191,9 @@ process trim {
     """
     trimmomatic PE -threads ${params.threads} \
         ${readsFiles} \
-        ${sampleName}_trimmomatic_R1.fastq.gz \
+        ${sampleName}_trimmed_R1.fastq.gz \
         /dev/null \
-        ${sampleName}_trimmomatic_R2.fastq.gz \
+        ${sampleName}_trimmed_R2.fastq.gz \
         /dev/null \
         ${trimsteps}
     """
@@ -158,17 +204,18 @@ process kraken {
     cpus params.threads
 
     input:
-    set val(sampleName), file(readsFiles) from TrimmedReads
+    val(sampleName)
+    file(readsFiles)
 
     output:
-    tuple sampleName, file("${sampleName}.kraken"), file("${sampleName}.krpt") into KrakenFile
-    tuple sampleName, file("${sampleName}.krpt") into KrakenVisuals
+    path "${sampleName}.kraken", emit: krakenfile
+    path "${sampleName}.kreport", emit: krakenreport
 
     script:
     quickflag = params.dev ? '--quick' : ''
     """
     kraken2 --db ${params.krakenDb} --threads ${params.threads} --paired ${quickflag} \
-        --report "${sampleName}.krpt" \
+        --report "${sampleName}.kreport" \
         --output "${sampleName}.kraken" \
         ${readsFiles}
     """
@@ -180,10 +227,11 @@ process kraken2krona {
     cpus 1
 
     input:
-    set val(sampleName), file(krakenReport) from KrakenVisuals
+    val(sampleName)
+    file(krakenReport)
 
     output:
-    file("${sampleName}.krona") into KronaText
+    path "${sampleName}.krona", emit: kronafile
 
     shell:
     '''
@@ -214,7 +262,7 @@ process krona {
     publishDir OutFolder, mode: 'copy'
 
     input:
-    file '*' from KronaText.collect()
+    file '*'
 
     output:
     file("krona.html")
@@ -233,11 +281,13 @@ process filterreads {
     cpus 1
 
     input:
-    file(readsFiles) from PreKrakenReads
-    set val(sampleName), file(krakenFile), file(krakenReport) from KrakenFile
+    val(sampleName)
+    file(readsFiles)
+    file(krakenFile)
+    file(krakenReport)
 
     output:
-    tuple sampleName, file("${sampleName}_filtered_{R1,R2}.fastq.gz") into FilteredReads
+    path "${sampleName}_filtered_{R1,R2}.fastq.gz", emit: filteredreads
 
     // Although I haven't seen it documented anywhere, 0 is unclassified reads
     // and 10239 is viral reads
@@ -259,10 +309,11 @@ process convert2fasta {
     cpus 1
 
     input:
-    set val(sampleName), file(readsFiles) from FilteredReads
+    val(sampleName)
+    file(readsFiles)
 
     output:
-    tuple val(sampleName), file("${sampleName}.fasta") into FilteredFastas
+    path "${sampleName}.fasta", emit: filteredfasta
 
     script:
     """
@@ -280,7 +331,8 @@ process blast {
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
     input:
-    set val(sampleName), file(readsFiles) from FilteredFastas
+    val(sampleName)
+    file(readsFiles)
 
     output:
     file("${sampleName}.blast.tsv")
