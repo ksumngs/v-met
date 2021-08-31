@@ -138,13 +138,16 @@ workflow {
 
     krona(KronaFiles)
 
-    filterreads(SampleNames, TrimmedReads, KrakenFiles, KrakenReports)
-    FilteredReads = filterreads.out.filteredreads
+    if (!params.skipblast) {
+        filterreads(SampleNames, TrimmedReads, KrakenFiles, KrakenReports)
+        FilteredReads = filterreads.out.filteredreads
 
-    convert2fasta(SampleNames, FilteredReads)
-    FilteredFastas = convert2fasta.out.filteredfasta
+        convert2fasta(SampleNames, FilteredReads)
+        FilteredFastas = convert2fasta.out.filteredfasta
 
-    blast(SampleNames, FilteredFastas)
+        blast(SampleNames, FilteredFastas)
+    }
+
 }
 
 process splitmeta {
