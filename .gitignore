@@ -19,3 +19,6 @@ results/
 testing/
 testing*
 *.pyc
+
+### Sphinx gitignore ###
+docs/_build

@@ -1,0 +1,23 @@
+name: Documentation
+on:
+  - release
+  - workflow_dispatch
+jobs:
+  build:
+    name: Sphinx docs to gh-pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+      - name: Install Sphinx 🇪🇬
+        uses: logikal-code/pip-install@v1.0.0
+        with:
+          requirements: docs/requirements.txt
+      - name: Build docs 📝
+        run: |
+          sphinx-build -b html docs docs/_build
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          branch: gh-pages
+          folder: docs/_build

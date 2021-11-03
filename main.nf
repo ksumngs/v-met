@@ -1,213 +1,273 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+include { cowsay } from './lib/cowsay.nf'
+
 if (params.help) {
-    log.info \
+    cowsay(
+    """\
+====================================================================================
+                                        v-met
+====================================================================================
+
+    v-met - A bare-bones, ridiculously simple metagenomics pipeline for viruses
+
+    Usage:
+
+        nextflow run ksumngs/v-met
+
+    Options:
+
+        --input             Relative or absolute path to directory containing
+                            gzipped fastq files
+                                type: path, default: .
+
+        --platform          Type of reads to process. Options are 'illumina' and
+                            'nanopore'
+                                type: string, default: none
+
+        --kraken2_db        Kraken2-compatible database for classifying reads
+                                type: path, default: none
+
+        --blast_db          Folder containing an NCBI BLAST NT database
+                                type: path, default: none
+
+        --blast_target      Which reads to BLAST. Possible options are
+                              'none'          Disable BLAST
+                              'all'           BLAST all reads
+                              'unclassified'  BLAST only Kraken's unclassified reads
+                              'classified'    BLAST only Kraken's classified reads
+                              - or -
+                              A space-separated list of NCBI taxids to keep reads
+                              that were classified as matching those taxids
+                            Defaults to keeping unclassified and viral reads.
+                                type: string, default: '0 10239'
+
+    For more information on usage and parameters, visit the website at
+        https://ksumngs.github.io/v-met
     """
-NAME
-    viral-metagenomics-pipeline - Automated analysis of viral reads in metagenomics samples
+    )
 
-SYNOPSIS
-    nextflow run millironx/viral-metagenomics-pipeline
-        --kraken.db <kraken2 database location>
-
-OPTIONS
-    --readsfolder
-        The folder containing parired-end Illumina reads in gzipped fastq format. Defaults
-        to the current directory
-
-    --threads
-        Number of threads to process each sample with. Can't be adjusted on a per-process
-        basis. Defaults to 4
-
-    --runname
-        A friendly identifier to describe the samples being analyzed. Defaults to
-        'viral-metagenomics'
-
-    --outfolder
-        The place where the final anlysis products will be stored. Defaults to runname_out
-
-    --dev
-        Run using fewer inputs and faster process options
-
-    --devinputs
-        The number of inputs to take in when using --dev
-
-    --kmer-length
-        The length of kmers when assembling. Defaults to 35
-
-PROCESS-SPECIFIC OPTIONS
-Trimmomatic:
-    Please see https://github.com/usadellab/Trimmomatic for full documentation and
-    descriptions of the trimming steps.
-
-    --trim-adapters
-        Passed to ILLUMINACLIP trimming step. Specifies the path to a fasta file containing
-        all the adapters. Valid values are:
-            'NexteraPE-PE.fa'
-            'TruSeq2-PE.fa'
-            'TruSeq3-PE-2.fa'
-            'TruSeq3-PE.fa'
-        Defaults to 'NexteraPI-PE.fa'. If custom adapters are desired, please see
-        Trimmomatic documentation and ensure that the location of the adapter is available
-        to the container running Trimmomatic
-
-    --trim-mismatches
-        Passed to ILLUMINACLIP trimming step. Specifies the maximum mismatch count which
-        will still allow a full adapter match. Defaults to 2
-
-    --trim-pclip
-        Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between the
-        two reads must be for PE palindrome read alignment. Defaults to 30
-
-    --trim-clip
-        Passed to ILLUMINACLIP trimming step. Specifies how accurate the match between any
-        adapter sequence must be against a read. Defaults to 10
-
-    --trim-winsize
-        Passed to SLIDINGWINDOW trimming step. Specifies the number of bases to average
-        across. If used, --trim-winqual must also be specified.
-
-    --trim-winqual
-        Passed to the SLIDINGWINDOW trimming step. Specifies the average base quality
-        required. If used, --trim-winsize must also be specified.
-
-    --trim-leading
-        Passed to the LEADING trimming step. Specifies the minimum quality required to keep
-        a base
-
-    --trim-trailing
-        Passed to the TRAILING trimming step. Specifies the minimum quality required to keep
-        a base
-
-    --trim-crop
-        Passed to the CROP trimming step. The number of bases to keep, from the start of
-        the read
-
-    --trim-headcrop
-        Passed to the HEADCROP trimming step. The number of bases to remove from the start
-        of the read
-
-    --trim-minlen
-        Passed to the MINLEN trimming step. Specifies the minimum length of reads to
-        be kept.
-
-Kraken:
-    See https://github.com/DerrickWood/kraken2/wiki/Manual for full documentation of
-    Kraken 2's available options
-    --kraken-db
-        Path to Kraken 2 database. REQUIRED
-
-BLAST:
-    --blast-db
-        Path to blast databases. REQUIRED. It is also recommended to place this value in the
-        BLASTDB environment variable.
-"""
 exit 0
 }
 
-// Make params persist that need to
-RunName = params.runname
+if (!params.ont && !params.pe) {
+    log.error "--platform <illumina,nanopore> must be specified"
+    exit 1
+}
 
-// Create an outfolder name if one wasn't provided
-if(params.outfolder == "") {
-    OutFolder = RunName + "_out"
+if (!params.kraken2_db) {
+    log.error "--kraken2_db must be specified"
 }
-else {
-    OutFolder = params.outfolder
+
+if ((!params.skip_trimming || params.blast_target != none) && !params.blast_db) {
+    log.error "--blast_db must be specified, or else --blast_target 'none' must be passed"
 }
+
 workflow {
     // Bring in the reads files
-    RawReads = Channel
-        .fromFilePairs("${params.readsfolder}/*{R1,R2,_1,_2}*.{fastq,fq}.gz")
-        .take( params.dev ? params.devinputs : -1 )
-
-    RawReads | splitmeta | trim | kraken | kraken2krona
-
-    krona(kraken2krona.out.collect())
-
-    if (!params.skipblast) {
-        KrakenReads = trim.out.join(kraken.out)
-
-        KrakenReads | filterreads | convert2fasta | blast
+    if (params.ont) {
+        RawReads = Channel
+            .fromPath("${params.input}/*.{fastq,fq}.gz")
+            .map{ file -> tuple(file.simpleName, file) }
+    }
+    else {
+        RawReads = Channel
+            .fromFilePairs("${params.input}/*{R1,R2,_1,_2}*.{fastq,fq}.gz")
     }
 
+    // Simplify the sample names
+    sample_rename(RawReads)
+    RenamedReads = sample_rename.out
+
+    // Trim the reads
+    if (!params.skip_trimming) {
+        if (params.ont) {
+            nanofilt(RenamedReads)
+            TrimmedReads = nanofilt.out
+        }
+        else
+        {
+            trimmomatic(RenamedReads)
+            TrimmedReads = trimmomatic.out
+        }
+    }
+    else {
+        TrimmedReads = RenamedReads
+    }
+
+    kraken(TrimmedReads)
+
+    KrakenReports = kraken.out.reports
+    UnclassifiedReads = kraken.out.unclassified
+    ClassifiedReads = kraken.out.classified
+
+    kraken2krona(KrakenReports)
+    KrakenKronas = kraken2krona.out
+
+    krona(KrakenKronas.collect())
+
+    if (!params.skip_blast && params.blast_target != 'none') {
+        if (params.blast_target == 'all') {
+            blast(TrimmedReads)
+        }
+        else if (params.blast_target == 'classified') {
+            blast(ClassifiedReads)
+        }
+        else if (params.blast_target == 'unclassified') {
+            blast(UnclassifiedReads)
+        }
+        else {
+            KrakenReads = TrimmedReads.join(KrakenReports)
+            KrakenReads | filterreads | convert2fasta | blast
+        }
+    }
 }
 
-process splitmeta {
-    cpus 1
+process sample_rename {
+    label 'process_low'
 
     input:
     tuple val(givenName), file(readsFiles)
 
     output:
-    tuple val(sampleName), file("out/*")
+    tuple val(sampleName), file("out/*.fastq.gz")
 
     script:
     sampleName = givenName.split('_')[0]
+    if (params.ont) {
+        """
+        mkdir out
+        mv ${readsFiles[0]} out/${sampleName}.fastq.gz
+        """
+    }
+    else {
+        """
+        mkdir out
+        mv ${readsFiles[0]} out/${sampleName}_R1.fastq.gz
+        mv ${readsFiles[1]} out/${sampleName}_R2.fastq.gz
+        """
+    }
+}
+
+process nanofilt {
+    label 'nanofilt'
+    label 'process_low'
+
+    input:
+    tuple val(sampleName), file(readsFiles)
+
+    output:
+    tuple val(sampleName), path("${sampleName}_trimmed.fastq.gz")
+
+    script:
+    minlenflag = ( params.trim_minlen > 0 )   ? "--length ${params.trim_minlen}"     : ''
+    maxlenflag = ( params.trim_maxlen > 0 )   ? "--maxlength ${params.trim_maxlen}"  : ''
+    qualflag   = ( params.trim_meanqual > 0 ) ? "--quality ${params.trim_meanqual}"  : ''
+    mingcflag  = ( params.trim_mingc > 0 )    ? "--minGC ${params.trim_mingc}"       : ''
+    maxgcflag  = ( params.trim_maxgc > 0 )    ? "--maxGC ${params.trim_maxgc}"       : ''
+    headflag   = ( params.trim_headcrop > 0 ) ? "--headcrop ${params.trim_headcrop}" : ''
+    tailflag   = ( params.trim_tailcrop > 0 ) ? "--tailcrop ${params.trim_tailcrop}" : ''
+    optionflags = [
+        minlenflag,
+        maxlenflag,
+        qualflag,
+        mingcflag,
+        maxgcflag,
+        headflag,
+        tailflag
+    ].join(' ')
     """
-    mkdir out
-    mv -n ${readsFiles[0]} out/${sampleName}_R1.fastq.gz
-    mv -n ${readsFiles[1]} out/${sampleName}_R2.fastq.gz
+    gunzip < ${readsFiles} | \
+        NanoFilt --logfile ${sampleName}.nanofilt.log ${optionflags} | \
+        gzip -9 > ${sampleName}_trimmed.fastq.gz
     """
 }
 
 
 // First trim, using Trimmomatic
-process trim {
-    cpus params.threads
+// Trim Illumina reads
+process trimmomatic {
+    label 'trimmomatic'
+    label 'process_medium'
 
     input:
     tuple val(sampleName), file(readsFiles)
 
     output:
-    tuple val(sampleName), file("${sampleName}_trimmed_{R1,R2}.fastq.gz")
+    tuple val(sampleName), path("*.fastq.gz")
 
     script:
     // Put together the trimmomatic parameters
-    ILLUMINACLIP = "ILLUMINACLIP:/Trimmomatic-0.39/adapters/${params.trimAdapters}:${params.trimMismatches}:${params.trimPclip}:${params.trimClip}"
-    SLIDINGWINDOW = ( params.trimWinsize > 0 && params.trimWinqual > 0 ) ? "SLIDINGWINDOW:${params.trimWinsize}:${params.trimWinqual}" : ""
-    LEADING = ( params.trimLeading > 0 ) ? "LEADING:${params.trimLeading}" : ""
-    TRAILING = ( params.trimTrailing > 0 ) ? "TRAILING:${params.trimTrailing}" : ""
-    CROP = ( params.trimCrop > 0 ) ? "CROP:${params.trimCrop}" : ""
-    HEADCROP = ( params.trimHeadcrop > 0 ) ? "HEADCROP:${params.trimHeadcrop}" : ""
-    MINLEN = ( params.trimMinlen > 0 ) ? "MINLEN:${params.trimMinlen}" : ""
-    trimsteps = ILLUMINACLIP + ' ' + SLIDINGWINDOW + ' ' + LEADING + ' ' + TRAILING + ' ' + CROP + ' ' + HEADCROP + ' ' + MINLEN
+    clipflag =
+        ( !(params.trim_adapters.getClass() == Boolean || params.trim_adapters.allWhitespace) &&
+        params.trim_mismatches > 0 && params.trim_pclip > 0 && params.trim_clip) ?
+        "ILLUMINACLIP:/Trimmomatic-0.39/adapters/${params.trim_adapters}:${params.trim_mismatches}:${params.trim_pclip}:${params.trim_clip}" : ''
+    winflag =
+        ( params.trim_winsize > 0 && params.trim_winqual > 0 ) ? "SLIDINGWINDOW:${params.trim_winsize}:${params.trim_winqual}" : ""
+    leadflag =
+        ( params.trim_leading > 0 ) ? "LEADING:${params.trim_leading}" : ""
+    trailflag =
+        ( params.trim_trailing > 0 ) ? "TRAILING:${params.trim_trailing}" : ""
+    cropflag =
+        ( params.trim_tailcrop > 0 ) ? "CROP:${params.trim_crop}" : ""
+    headflag =
+        ( params.trim_headcrop > 0 ) ? "HEADCROP:${params.trim_headcrop}" : ""
+    minlenflag =
+        ( params.trim_minlen > 0 ) ? "MINLEN:${params.trim_minlen}" : ""
+    trimsteps = [
+        clipflag,
+        winflag,
+        leadflag,
+        trailflag,
+        cropflag,
+        headflag,
+        minlenflag
+    ].join(' ')
     """
-    trimmomatic PE -threads ${params.threads} \
+    trimmomatic PE -threads ${task.cpus} \
         ${readsFiles} \
         ${sampleName}_trimmed_R1.fastq.gz \
         /dev/null \
         ${sampleName}_trimmed_R2.fastq.gz \
         /dev/null \
-        ${trimsteps}
+        ${trimsteps} 2> ${sampleName}.trimmomatic.log
     """
 }
 
 // Classify reads using Kraken
 process kraken {
-    cpus params.threads
+    label 'kraken'
+    label 'process_high_memory'
 
     input:
     tuple val(sampleName), file(readsFiles)
 
     output:
-    tuple val(sampleName), file("${sampleName}.kraken"), file("${sampleName}.kreport")
+    tuple val(sampleName), file("${sampleName}.kraken"), file("${sampleName}.kreport"), emit: reports
+    tuple val(sampleName), path("${sampleName}_classified*.fastq.gz"), emit: classified
+    tuple val(sampleName), path("${sampleName}_unclassified*.fastq.gz"), emit: unclassified
 
     script:
-    quickflag = params.dev ? '--quick' : ''
+    pairedflag       = params.pe ? '--paired' : ''
+    classifiedflag   = params.pe ? "${sampleName}_classified#.fastq"   : "${sampleName}_classified.fastq"
+    unclassifiedflag = params.pe ? "${sampleName}_unclassified#.fastq" : "${sampleName}_unclassified.fastq"
     """
-    kraken2 --db ${params.krakenDb} --threads ${params.threads} --paired ${quickflag} \
+    kraken2 --db ${params.kraken2_db} --threads ${task.cpus} ${pairedflag} \
         --report "${sampleName}.kreport" \
         --output "${sampleName}.kraken" \
+        --classified-out ${classifiedflag} \
+        --unclassified-out ${unclassifiedflag} \
         ${readsFiles}
+    gzip -9 *.fastq
     """
 }
 
 // Convert the kraken reports to krona input files using KrakenTools then
 // prettify them using unix tools
 process kraken2krona {
-    cpus 1
+    label 'krakentools'
+    label 'process_low'
 
     input:
     tuple val(sampleName), file(krakenFile), file(krakenReport)
@@ -238,10 +298,11 @@ process kraken2krona {
 // Collect all of the krona input files and convert them to a single graphical
 // webpage to ship to the user
 process krona {
-    cpus 1
+    label 'krona'
+    label 'process_low'
 
     // This is a final step: publish it
-    publishDir OutFolder, mode: 'copy'
+    publishDir "${params.outdir}", mode: "${params.publish_dir_mode}"
 
     input:
     file '*'
@@ -260,7 +321,8 @@ process krona {
 // Pull the viral reads and any unclassified reads from the original reads
 // files for futher downstream processing using KrakenTools
 process filterreads {
-    cpus 1
+    label 'krakentools'
+    label 'process_low'
 
     input:
     tuple val(sampleName), file(readsFiles), file(krakenFile), file(krakenReport)
@@ -275,7 +337,7 @@ process filterreads {
     extract_kraken_reads.py -k ${krakenFile} \
         -s1 ${readsFiles[0]} -s2 ${readsFiles[1]} \
         -r ${krakenReport} \
-        -t 0 10239 --include-children \
+        -t ${params.blast_target} --include-children \
         --fastq-output \
         -o ${sampleName}_filtered_R1.fastq -o2 ${sampleName}_filtered_R2.fastq
     gzip ${sampleName}_filtered_{R1,R2}.fastq
@@ -285,7 +347,8 @@ process filterreads {
 
 // Convert the viral and unclassified reads to fasta for blast
 process convert2fasta {
-    cpus 1
+    label 'seqtk'
+    label 'process_low'
 
     input:
     tuple val(sampleName), file(readsFiles)
@@ -301,10 +364,11 @@ process convert2fasta {
 
 // Blast contigs
 process blast {
-    cpus params.threads
+    label 'blast'
+    label 'process_medium'
 
     // This is a final step: publish it
-    publishDir OutFolder, mode: 'copy'
+    publishDir "${params.outdir}", mode: "${params.publish_dir_mode}"
 
     // Blast needs to happen on all contigs from all assemblers, and both
     // blastn and blastx needs to be applied to all contigs
@@ -321,20 +385,12 @@ process blast {
     outfmt         = '"6 qseqid stitle sgi staxid ssciname scomname score bitscore qcovs evalue pident length slen saccver mismatch gapopen qstart qend sstart send"'
     evalue         = 1e-5
 
-    // Pick the faster algorithm if this is a development cycle, otherwise
-    // the titular program is also the name of the algorithm
-    if ( params.dev ) {
-        max_hsps = 1
-        num_alignments = 1
-        evalue = 1e-50
-    }
-
     // Squash the filename into a single variable
     outFile = "${sampleName}.blast.tsv"
     """
     echo "Sequence ID\tDescription\tGI\tTaxonomy ID\tScientific Name\tCommon Name\tRaw score\tBit score\tQuery Coverage\tE value\tPercent identical\tSubject length\tAlignment length\tAccession\tMismatches\tGap openings\tStart of alignment in query\tEnd of alignment in query\tStart of alignment in subject\tEnd of alignment in subject" > ${outFile}
     blastn -query ${readsFiles} \
-        -db ${params.blastDb}/nt \
+        -db ${params.blast_db}/nt \
         -max_hsps ${max_hsps} \
         -num_alignments ${num_alignments} \
         -outfmt ${outfmt} \
