@@ -131,7 +131,7 @@ Profile Selection
 -----------------
 
 Profiles allow for unique combinations of settings within a Nextflow pipeline.
-For the purposes of jev-analysis-pipeline, they reconfigure the pipeline to run
+For the purposes of he v-met pipeline, they reconfigure the pipeline to run
 on a particular container engine. Whichever engine you choose must be installed
 and available (e.g. ``module load``) on each node that pipeline processes are
 running on. The available options are
