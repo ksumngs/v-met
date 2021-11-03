@@ -64,6 +64,25 @@ if ((!params.skip_trimming || params.blast_target != none) && !params.blast_db) 
     log.error "--blast_db must be specified, or else --blast_target 'none' must be passed"
 }
 
+cowsay(
+"""\
+====================================================================================
+                                        v-met
+====================================================================================
+
+Input folder:           ${params.input}
+Sequencing platform:    ${params.platform}
+    Illumina?:          ${params.pe}
+    Nanopore?:          ${params.ont}
+Reference genome:       ${params.genome}
+Kraken2 Database:       ${params.kraken2_db}
+BLAST Database:         ${params.blast_db}
+Reads to BLAST:         '${params.keep_taxid}'
+Output folder           ${params.outdir}
+Diagnostics folder:     ${params.tracedir}
+"""
+)
+
 workflow {
     // Bring in the reads files
     if (params.ont) {
