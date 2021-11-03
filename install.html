@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; v-met  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Usage" href="usage.html" />
+    <link rel="prev" title="Viral Metagenomics with v-met" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> v-met
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#software-dependencies">Software Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database-dependencies">Database Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Kraken 2 Database</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ncbi-nt-blast-database">NCBI nt BLAST Database</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-the-pipeline">Getting the Pipeline</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Complete Parameter Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">v-met</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/install.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<section id="software-dependencies">
+<h2>Software Dependencies<a class="headerlink" href="#software-dependencies" title="Permalink to this headline"></a></h2>
+<p>Here’s what you’ll need to get started. Unless otherwise noted, every program
+must be available on your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> in bash (other shells don’t count).</p>
+<ul class="simple">
+<li><p>Git v2.7.0 or higher (🌐/🍺/🐍)</p></li>
+<li><p>Curl v2.41.0 or higher (🌐/🍺/🐍)</p></li>
+<li><p>Java Runtime v8-v15 (🌐/🍺/🐍)</p></li>
+<li><p>Nextflow v20.10.0 or higher (🌐/🐍)</p></li>
+<li><dl class="simple">
+<dt>One or more of the following container engines</dt><dd><ul>
+<li><p>Docker v20.10.0 or higher (🌐)</p></li>
+<li><p>Podman v3.0 or higher (🌐)</p></li>
+<li><p>Singularity v3.7 or higher (🌐)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Conda v3.7 or higher (🌐/🍺)</dt><dd><ul>
+<li><p>Full Anaconda and Miniconda both work</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Most of these programs can be installed without root privileges in your
+homedirectory using either <a class="reference external" href="https://brew.sh">Homebrew</a> or
+<a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">Conda</a>. Sources legend:</p>
+<ul class="simple">
+<li><p>🌐: Distro/Vendor Repos</p></li>
+<li><p>🍺: Linuxbrew</p></li>
+<li><p>🐍: Bioconda/conda-forge</p></li>
+</ul>
+</section>
+<section id="database-dependencies">
+<h2>Database Dependencies<a class="headerlink" href="#database-dependencies" title="Permalink to this headline"></a></h2>
+<p>You will need a
+<a class="reference external" href="https://github.com/DerrickWood/kraken2/wiki/Manual#kraken-2-databases">Kraken 2 database</a>
+and an <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK569850">NCBI BLAST nt database</a>
+accessible from your compute machine to run the pipeline.</p>
+<section id="id1">
+<h3>Kraken 2 Database<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<p>First, we recommend installing our custom version of
+<a class="reference external" href="https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases">kraken2-build</a>,
+available at <a class="reference external" href="https://github.com/ksumngs/kraken2">https://github.com/ksumngs/kraken2</a>. This custom version of Kraken2
+incorporates code from <a class="reference external" href="https://github.com/imichaeldotorg">&#64;imichaeldotorg</a>,
+<a class="reference external" href="https://github.com/karolisr">&#64;karolisr</a>, and our own
+<a class="reference external" href="https://github.com/millironx">&#64;millironx</a> that allows for downloading
+additional libraries, and is more resilient to failure when NCBI changes file
+locations on their servers. The database generated by our custom build is
+perfectly compatible with Derrick Wood’s original Kraken2, and vice-versa.</p>
+<p>When working with animal samples, we like to use a “complete” unmasked RefSeq
+Kraken2 database. You can get it with the following, assuming <code class="docutils literal notranslate"><span class="pre">~/.local/bin</span></code>
+is on your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> (it is on most distros)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nv">KRAKEN2_DIR</span><span class="o">=</span><span class="nv">$HOME</span>/.local/opt/kraken2
+<span class="nv">KRAKEN2_DEFAULT_DB</span><span class="o">=</span>/kraken2/complete-refseq-unmasked
+
+git clone https://github.com/ksumngs/kraken2.git
+<span class="nb">cd</span> kraken2
+./install_kraken2.sh <span class="nv">$KRAKEN2_DIR</span>
+ln -s <span class="nv">$KRAKEN2_DIR</span>/kraken2<span class="o">{</span>,-build,-inspect,lib.pm<span class="o">}</span> <span class="nv">$HOME</span>/.local/bin
+
+<span class="nb">cd</span>
+kraken2-build --download-taxonomy --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+<span class="nv">LIBRARIES</span><span class="o">=(</span>archaea bacteria plasmid viral plant fungi protozoa UniVec_Core plastid mitochondrion invertebrate vertebrate_mammalian vertebrate_other<span class="o">)</span>
+<span class="k">for</span> LIB in <span class="si">${</span><span class="nv">LIBRARIES</span><span class="p">[@]</span><span class="si">}</span><span class="p">;</span> <span class="k">do</span>
+  kraken2-build --download-library <span class="nv">$LIB</span> --db <span class="nv">$KRAKEN2_DEFAULT_DB</span> --no-masking
+<span class="k">done</span>
+
+kraken2-build --build --db <span class="nv">$KRAKEN2_DEFAULT_DB</span> --threads <span class="k">$(</span>nproc<span class="k">)</span>
+kraken2-build --clean --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+</pre></div>
+</div>
+<p>For some viruses that don’t have good RefSeq entries (e.g. rotavirus), it is
+better to use a masked nt Kraken2 database. You will need to have NCBI’s
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/lxr/source/src/app/dustmasker">dustmasker</a>
+in your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> (typically comes installed with BLAST). In our experience,
+using multiple threads when when building the nt database tends to slow down the
+build process and cause it to crash. You can get this database using</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nv">KRAKEN2_DIR</span><span class="o">=</span><span class="nv">$HOME</span>/.local/opt/kraken2
+<span class="nv">KRAKEN2_DEFAULT_DB</span><span class="o">=</span>/kraken2/complete-refseq-unmasked
+
+git clone https://github.com/ksumngs/kraken2.git
+<span class="nb">cd</span> kraken2
+./install_kraken2.sh <span class="nv">$KRAKEN2_DIR</span>
+ln -s <span class="nv">$KRAKEN2_DIR</span>/kraken2<span class="o">{</span>,-build,-inspect,lib.pm<span class="o">}</span> <span class="nv">$HOME</span>/.local/bin
+
+<span class="nb">cd</span>
+kraken2-build --download-taxonomy --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+kraken2-build --download-library nt --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+
+kraken2-build --build --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+kraken2-build --clean --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+</pre></div>
+</div>
+</section>
+<section id="ncbi-nt-blast-database">
+<h3>NCBI nt BLAST Database<a class="headerlink" href="#ncbi-nt-blast-database" title="Permalink to this headline"></a></h3>
+<p>Downloading the BLAST database is technically optional, as its use can be
+bypassed by passing <code class="docutils literal notranslate"><span class="pre">none</span></code> to doc:<cite>–blast_target</cite> parameter.</p>
+<p>To download the database, use NCBI’s
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK569850">update_blastdb.pl</a> script, like</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="nb">cd</span> /blastdb
+update_blastdb.pl --decompress nt taxdb
+</pre></div>
+</div>
+<p>Downloading the <code class="docutils literal notranslate"><span class="pre">taxdb</span></code> database into the same directory allows BLAST to give
+the common and scientific names in the BLAST results.</p>
+</section>
+</section>
+<section id="getting-the-pipeline">
+<h2>Getting the Pipeline<a class="headerlink" href="#getting-the-pipeline" title="Permalink to this headline"></a></h2>
+<p>The recommended way to run it is to pull and run at the same time</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nextflow</span> <span class="n">run</span> <span class="n">ksumngs</span><span class="o">/</span><span class="n">v</span><span class="o">-</span><span class="n">met</span> <span class="o">-</span><span class="n">latest</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>If you need a specific version, use Nextflow’s <code class="docutils literal notranslate"><span class="pre">-r</span></code> option with the version
+tag.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nextflow</span> <span class="n">run</span> <span class="n">ksumngs</span><span class="o">/</span><span class="n">v</span><span class="o">-</span><span class="n">met</span> <span class="o">-</span><span class="n">r</span> <span class="n">v0</span><span class="o">.</span><span class="mf">1.0</span><span class="o">-</span><span class="n">alpha</span> <span class="o">...</span>
+</pre></div>
+</div>
+<p>If you <em>really</em> want to download the pipeline before use, you can run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nextflow</span> <span class="n">pull</span> <span class="n">ksumngs</span><span class="o">/</span><span class="n">v</span><span class="o">-</span><span class="n">met</span>
+</pre></div>
+</div>
+<p>If you want to tweak the code and run it locally, you can clone the repo and run
+from the code itself.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ksumngs</span><span class="o">/</span><span class="n">v</span><span class="o">-</span><span class="n">met</span><span class="o">.</span><span class="n">git</span>
+<span class="o">./</span><span class="n">v</span><span class="o">-</span><span class="n">met</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">nf</span> <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Viral Metagenomics with v-met" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="usage.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, K-State Molecular NGS Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

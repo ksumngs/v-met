@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complete Parameter Reference &mdash; v-met  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> v-met
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Complete Parameter Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#input-options">Input Options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#input">–input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#platform">–platform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pe">–pe</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ont">–ont</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#help">–help</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#output-options">Output Options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#outdir">–outdir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tracedir">–tracedir</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#publish-dir-mode">–publish_dir_mode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#kraken2-options">Kraken2 Options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#kraken2-db">–kraken2_db</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#ncbi-blast-options">NCBI BLAST Options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#blast-db">–blast_db</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#blast-target">–blast_target</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#read-trimming-options">Read Trimming Options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#common-options">Common Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#trim-minlen">–trim_minlen</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-headcrop">–trim_headcrop</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#illumina-specific-trimmomatic-options">Illumina-Specific (Trimmomatic) Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#trim-adapters">–trim_adapters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-mismatches">–trim_mismatches</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-pclip">–trim_pclip</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-clip">–trim_clip</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-winsize">–trim_winsize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-winqual">–trim_winqual</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-leading">–trim_leading</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-trailing">–trim_trailing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-crop">–trim_crop</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#nanopore-specific-nanofilt-options">Nanopore-Specific (NanoFilt) Options</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#trim-maxlen">–trim_maxlen</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-meanqual">–trim_meanqual</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-mingc">–trim_mingc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-maxgc">–trim_maxgc</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#trim-tailcrop">–trim_tailcrop</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#workflow-options">Workflow Options</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#skip-trimming">–skip_trimming</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#skip-blast">–skip_blast</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#resource-allocation-options">Resource Allocation Options</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">v-met</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Complete Parameter Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/parameters.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="complete-parameter-reference">
+<h1>Complete Parameter Reference<a class="headerlink" href="#complete-parameter-reference" title="Permalink to this headline"></a></h1>
+<p>Every single parameter in the entire pipeline is described here. If you need to
+tweak every little detail of how your samples are analyzed, you’ve come to
+the right place! Note that <em>every</em> parameter is described here, even those that
+shouldn’t be used, so proceed with caution!</p>
+<section id="input-options">
+<h2>Input Options<a class="headerlink" href="#input-options" title="Permalink to this headline"></a></h2>
+<section id="input">
+<h3>–input<a class="headerlink" href="#input" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The path to the folder containing input reads. For Illumina (paired-end) reads,
+the file names must be identical until the ending underscore with a read number,
+e.g. ‘sample1_S10_L001_R1_001.fastq.gz’ and ‘sample1_S10_L001_R2_001.fastq.gz’.
+The read number must be designated using either ‘_1’ and ‘_2’ or ‘_R1’ and
+‘_R2’. For Nanopore reads, each fastq file is assumed to be a unique sample, so,
+e.g. ‘FAP01234_pass_barcode05_abcd01234_0.fastq.gz’ and
+‘FAP01234_pass_barcode05_abcd01234_1.fastq.gz’ are assumed to be different
+samples even though they are from the same barcode. All read files must be
+gzipped, and have the extension ‘.fastq.gz’ or ‘.fq.gz’.</p>
+<p>Defaults to the current working directory.</p>
+</section>
+<section id="platform">
+<h3>–platform<a class="headerlink" href="#platform" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>n/a</p></td>
+</tr>
+</tbody>
+</table>
+<p>Defines which type of reads to analyze. Must be either ‘illumina’ or ‘nanopore’.</p>
+</section>
+<section id="pe">
+<h3>–pe<a class="headerlink" href="#pe" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Boolean</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>false</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This parameter is hidden and should <strong>never</strong> be used on the command
+line! Bad things will happen if you do!</p>
+</div>
+<p>Internally-used parameter to check if the pipeline is processing Illumina reads.
+Automatically set by <a class="reference internal" href="#platform"><span class="std std-ref">–platform</span></a></p>
+</section>
+<section id="ont">
+<h3>–ont<a class="headerlink" href="#ont" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Boolean</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>false</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This parameter is hidden and should <strong>never</strong> be used on the command
+line! Bad things will happen if you do!</p>
+</div>
+<p>Internally-used parameter to check if the pipeline is processing Nanopore reads.
+Automatically set by <a class="reference internal" href="#platform"><span class="std std-ref">–platform</span></a></p>
+</section>
+<section id="help">
+<h3>–help<a class="headerlink" href="#help" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Boolean</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>false</p></td>
+</tr>
+</tbody>
+</table>
+<p>Print a friendly help message that is both less daunting and less complete than
+the document you’re reading right now, and exit.</p>
+</section>
+</section>
+<section id="output-options">
+<h2>Output Options<a class="headerlink" href="#output-options" title="Permalink to this headline"></a></h2>
+<section id="outdir">
+<h3>–outdir<a class="headerlink" href="#outdir" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>./results</p></td>
+</tr>
+</tbody>
+</table>
+<p>Where to store the results files.</p>
+</section>
+<section id="tracedir">
+<h3>–tracedir<a class="headerlink" href="#tracedir" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 73%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p><a class="reference internal" href="#outdir"><span class="std std-ref">–outdir</span></a>/.trace</p></td>
+</tr>
+</tbody>
+</table>
+<p>Where to store pipeline performance reports and diagnostic info. If you keep
+this as the default, then you can access these documents through the visualizer.</p>
+</section>
+<section id="publish-dir-mode">
+<h3>–publish_dir_mode<a class="headerlink" href="#publish-dir-mode" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>copy</p></td>
+</tr>
+</tbody>
+</table>
+<p>How to take files out of the <code class="docutils literal notranslate"><span class="pre">work</span></code> dirctories they were generated in and put
+them into <a class="reference internal" href="#outdir"><span class="std std-ref">–outdir</span></a>. Supports every mode that the
+<a class="reference external" href="https://nextflow.io/docs/latest/process.html#process-publishdir" title="(in Nextflow v21.04)"><span class="xref std std-ref">Nextflow publishDir directive</span></a>
+does, which as of Nextflow 21.04, includes</p>
+<ul class="simple">
+<li><p>symlink</p></li>
+<li><p>relink</p></li>
+<li><p>link</p></li>
+<li><p>copy</p></li>
+<li><p>copyNoFollow</p></li>
+<li><p>move</p></li>
+</ul>
+</section>
+</section>
+<section id="kraken2-options">
+<h2>Kraken2 Options<a class="headerlink" href="#kraken2-options" title="Permalink to this headline"></a></h2>
+<section id="kraken2-db">
+<h3>–kraken2_db<a class="headerlink" href="#kraken2-db" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>n/a</p></td>
+</tr>
+</tbody>
+</table>
+<p>The path to a <a class="reference external" href="https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases">Kraken2 database</a> to
+perform the main identification of viruses. This path will be automatically
+mounted into the container environments if a containerized profile is used.</p>
+<p>Corresponds to the
+<a class="reference external" href="https://github.com/DerrickWood/kraken2/wiki/Manual#classification">–db</a>
+option of Kraken2.</p>
+</section>
+</section>
+<section id="ncbi-blast-options">
+<h2>NCBI BLAST Options<a class="headerlink" href="#ncbi-blast-options" title="Permalink to this headline"></a></h2>
+<section id="blast-db">
+<h3>–blast_db<a class="headerlink" href="#blast-db" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>n/a</p></td>
+</tr>
+</tbody>
+</table>
+<p>The path to a local
+<a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK569850">NCBI nt database</a> This path
+will be automatically mounted into the container environments if a containerized
+profile is used.</p>
+</section>
+<section id="blast-target">
+<h3>–blast_target<a class="headerlink" href="#blast-target" title="Permalink to this headline"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>0 10239</p></td>
+</tr>
+</tbody>
+</table>
+<p>Specifies which reads get analyzed with BLAST. Possible options are</p>
+<dl class="simple">
+<dt>all</dt><dd><p>All reads will be analyzed with Kraken2 first, then analyzed with BLAST.</p>
+</dd>
+<dt>none</dt><dd><p>No reads will be analyzed with BLAST.</p>
+</dd>
+<dt>classified</dt><dd><p>Only reads that were classified with Kraken2 will be analyzed with BLAST
+(Useful where only the organisms of interest were added to the Kraken2
+database.)</p>
+</dd>
+<dt>unclassified</dt><dd><p>Only reads that could not be classified with Kraken2 will be analyzed with
+BLAST. (Useful where only the host or contaminants were added to the Kraken2
+database.)</p>
+</dd>
+<dt><em>list of taxids</em></dt><dd><p>For more fine-tuned selection, a space-separated list (use quotes on the
+command line) of the taxonomic ids to analyze using BLAST.</p>
+</dd>
+</dl>
+<p>Defaults to keeping all unclassified reads and all viral reads.</p>
+</section>
+</section>
+<section id="read-trimming-options">
+<h2>Read Trimming Options<a class="headerlink" href="#read-trimming-options" title="Permalink to this headline"></a></h2>
+<section id="common-options">
+<h3>Common Options<a class="headerlink" href="#common-options" title="Permalink to this headline"></a></h3>
+<section id="trim-minlen">
+<h4>–trim_minlen<a class="headerlink" href="#trim-minlen" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 77%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>100/300 (Illumina/Nanopore)</p></td>
+</tr>
+</tbody>
+</table>
+<p>Remove reads that are shorter than this length in bases.</p>
+<p>Corresponds to the <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">MINLEN</a>
+option of Trimmomatic for Illumina reads.</p>
+<p>Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–length</a>
+option of NanoFilt for Nanopore reads.</p>
+</section>
+<section id="trim-headcrop">
+<h4>–trim_headcrop<a class="headerlink" href="#trim-headcrop" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>The number of bases to remove from the start of the read.</p>
+<p>Corresponds to the <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">HEADCROP</a>
+option of Trimmomatic for Illumina reads.</p>
+<p>Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–headcrop</a>
+option of NanoFilt for Nanopore reads.</p>
+</section>
+</section>
+<section id="illumina-specific-trimmomatic-options">
+<h3>Illumina-Specific (Trimmomatic) Options<a class="headerlink" href="#illumina-specific-trimmomatic-options" title="Permalink to this headline"></a></h3>
+<section id="trim-adapters">
+<h4>–trim_adapters<a class="headerlink" href="#trim-adapters" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>String</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>NexteraPE-PE.fa</p></td>
+</tr>
+</tbody>
+</table>
+<p>Illumina adapters to be removed during trimming.</p>
+<p>Due to the way the container is built, custom adapters cannot be used, and this
+option <strong>must</strong> be set to one of the following</p>
+<ul class="simple">
+<li><p>NexteraPE-PE.fa</p></li>
+<li><p>TruSeq2-PE.fa</p></li>
+<li><p>TruSeq3-PE-2.fa</p></li>
+<li><p>TruSeq3-PE.fa</p></li>
+</ul>
+<p>If left blank (i.e. <code class="docutils literal notranslate"><span class="pre">--trim_adapters</span> <span class="pre">''</span></code>), then adapter trimming is disabled.</p>
+<p>Corresponds to the first
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">ILLUMINACLIP</a> option of
+Trimmomatic.</p>
+</section>
+<section id="trim-mismatches">
+<h4>–trim_mismatches<a class="headerlink" href="#trim-mismatches" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>2</p></td>
+</tr>
+</tbody>
+</table>
+<p>The maximum mismatch count which will still allow a full adapter match to be
+performed. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, then adapter trimming is disabled.</p>
+<p>Corresponds to the second
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">ILLUMINACLIP</a> option of
+Trimmomatic.</p>
+</section>
+<section id="trim-pclip">
+<h4>–trim_pclip<a class="headerlink" href="#trim-pclip" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>30</p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">pclip</span></code>: palindrome clip. How accurate the match between the two adapter
+ligated reads must be for paired-end palindrome read alignment. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>,
+then adapter trimming is disabled.</p>
+<p>Corresponds to the third
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">ILLUMINACLIP</a> option of
+Trimmomatic.</p>
+</section>
+<section id="trim-clip">
+<h4>–trim_clip<a class="headerlink" href="#trim-clip" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>10</p></td>
+</tr>
+</tbody>
+</table>
+<p>How accurate the match between any adapter sequence must be against a read. If
+set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, then adapter trimming is disabled.</p>
+<p>Corresponds to the final
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">ILLUMINACLIP</a> option of
+Trimmomatic.</p>
+</section>
+<section id="trim-winsize">
+<h4>–trim_winsize<a class="headerlink" href="#trim-winsize" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>50</p></td>
+</tr>
+</tbody>
+</table>
+<p>The number of bases to average quality accross during sliding window trimming.
+If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, then sliding window trimming is disabled.</p>
+<p>Corresponds to the first
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">SLIDINGWINDOW</a> option of
+Trimmomatic.</p>
+</section>
+<section id="trim-winqual">
+<h4>–trim_winqual<a class="headerlink" href="#trim-winqual" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>15</p></td>
+</tr>
+</tbody>
+</table>
+<p>The minimum average quality within the sliding window to keep a read. If set to
+<code class="docutils literal notranslate"><span class="pre">0</span></code>, then sliding window trimming is disabled.</p>
+<p>Corresponds to the second
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">SLIDINGWINDOW</a> option of
+Trimmomatic.</p>
+</section>
+<section id="trim-leading">
+<h4>–trim_leading<a class="headerlink" href="#trim-leading" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>NoFloat</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>15</p></td>
+</tr>
+</tbody>
+</table>
+<p>The minimum quality to keep a base in the leading end of a read. If set to
+<code class="docutils literal notranslate"><span class="pre">0</span></code>, LEADING trimming is disabled.</p>
+<p>Corresponds to the
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">LEADING</a> option of
+Trimmomatic.</p>
+</section>
+<section id="trim-trailing">
+<h4>–trim_trailing<a class="headerlink" href="#trim-trailing" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>15</p></td>
+</tr>
+</tbody>
+</table>
+<p>The minimum quality to keep a base in the trailing end of a read. If set to
+<code class="docutils literal notranslate"><span class="pre">0</span></code>, TRAILING trimming is disabled.</p>
+<p>Corresponds to the
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">TRAILING</a> option of
+Trimmomatic.</p>
+</section>
+<section id="trim-crop">
+<h4>–trim_crop<a class="headerlink" href="#trim-crop" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>The number of bases to keep from the start of the read. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, CROP
+trimming is disabled.</p>
+<p>Corresponds to the
+<a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">CROP</a> option of Trimmomatic.</p>
+</section>
+</section>
+<section id="nanopore-specific-nanofilt-options">
+<h3>Nanopore-Specific (NanoFilt) Options<a class="headerlink" href="#nanopore-specific-nanofilt-options" title="Permalink to this headline"></a></h3>
+<section id="trim-maxlen">
+<h4>–trim_maxlen<a class="headerlink" href="#trim-maxlen" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>Remove reads that are longer than this number of bases.</p>
+<p>Corresponds to the
+<a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–maxlength</a> option of
+NanoFilt.</p>
+</section>
+<section id="trim-meanqual">
+<h4>–trim_meanqual<a class="headerlink" href="#trim-meanqual" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>7</p></td>
+</tr>
+</tbody>
+</table>
+<p>Remove reads where the average basecall quality is lower than this.</p>
+<p>Corresponds to the
+<a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–quality</a> option of NanoFilt.</p>
+</section>
+<section id="trim-mingc">
+<h4>–trim_mingc<a class="headerlink" href="#trim-mingc" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Float</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>Remove reads that don’t have at least this fraction of GC content.</p>
+<p>Corresponds to the
+<a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–minGC</a> option of NanoFilt.</p>
+</section>
+<section id="trim-maxgc">
+<h4>–trim_maxgc<a class="headerlink" href="#trim-maxgc" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 57%" />
+<col style="width: 43%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Float</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>Remove reads that have more than this fraction of GC content. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>,
+then there is no upper limit of GC content.</p>
+<p>Corresponds to the
+<a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–maxGC</a> option of NanoFilt.</p>
+</section>
+<section id="trim-tailcrop">
+<h4>–trim_tailcrop<a class="headerlink" href="#trim-tailcrop" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Integer</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Required</p></td>
+<td><p>No</p></td>
+</tr>
+<tr class="row-odd"><td><p>Default</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<p>Remove this many bases from the end of each read.</p>
+<p>Corresponds to the
+<a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–tailcrop</a> option of NanoFilt.</p>
+</section>
+</section>
+</section>
+<section id="workflow-options">
+<h2>Workflow Options<a class="headerlink" href="#workflow-options" title="Permalink to this headline"></a></h2>
+<p>These options allow you to skip entire sections of the pipeline. They can
+significantly speed up pipeline execution if you know they are not needed, e.g.
+skipping read trimming from reads already trimmed in CLC Genomic Workbench. All
+of these options are boolean flags that are disabled by default.</p>
+<section id="skip-trimming">
+<h3>–skip_trimming<a class="headerlink" href="#skip-trimming" title="Permalink to this headline"></a></h3>
+<p>Treats the input reads as trimmed reads and skips using Trimmomatic or Filtlong
+on the reads.</p>
+</section>
+<section id="skip-blast">
+<h3>–skip_blast<a class="headerlink" href="#skip-blast" title="Permalink to this headline"></a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This parameter is deprecated. Pass <code class="docutils literal notranslate"><span class="pre">none</span></code> to <a class="reference internal" href="#blast-target"><span class="std std-ref">–blast_target</span></a>, instead.</p>
+</div>
+<p>Output only the results from Kraken for a faster pipeline execution.</p>
+</section>
+</section>
+<section id="resource-allocation-options">
+<h2>Resource Allocation Options<a class="headerlink" href="#resource-allocation-options" title="Permalink to this headline"></a></h2>
+<p>These are the maximum resources allowed for a single process within the
+pipeline. Place these in a <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> in a central location on your HPC
+to ensure that your pipeline is not cancelled for requesting too many resources.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 72%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--max_memory</span></code></p></td>
+<td><p>750.GB</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--max_cpus</span></code></p></td>
+<td><p>72</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--max_time</span></code></p></td>
+<td><p>240.h</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, K-State Molecular NGS Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
