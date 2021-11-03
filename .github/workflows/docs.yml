@@ -16,6 +16,9 @@ jobs:
       - name: Build docs 📝
         run: |
           sphinx-build -b html docs docs/_build
+      - name: Disable Jekyll ⛔
+        run: |
+          touch .nojekyll
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
