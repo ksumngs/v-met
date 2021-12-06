@@ -128,13 +128,13 @@ workflow {
 
     if (!params.skip_blast && params.blast_target != 'none') {
         if (params.blast_target == 'all') {
-            blast(TrimmedReads)
+            TrimmedReads | convert2fasta | blast
         }
         else if (params.blast_target == 'classified') {
-            blast(ClassifiedReads)
+            ClassifiedReads | convert2fasta | blast
         }
         else if (params.blast_target == 'unclassified') {
-            blast(UnclassifiedReads)
+            UnclassifiedReads | convert2fasta | blast
         }
         else {
             KrakenReads = TrimmedReads.join(KrakenReports)
