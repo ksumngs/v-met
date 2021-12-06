@@ -414,6 +414,6 @@ process blast {
         -num_alignments ${num_alignments} \
         -outfmt ${outfmt} \
         -evalue ${evalue} \
-        -num_threads ${params.threads} >> ${outFile}
+        -num_threads ${task.cpus} >> ${outFile}
     """
 }
