@@ -77,7 +77,7 @@ Sequencing platform:    ${params.platform}
 Reference genome:       ${params.genome}
 Kraken2 Database:       ${params.kraken2_db}
 BLAST Database:         ${params.blast_db}
-Reads to BLAST:         '${params.keep_taxid}'
+Reads to BLAST:         '${params.blast_target}'
 Output folder           ${params.outdir}
 Diagnostics folder:     ${params.tracedir}
 """
