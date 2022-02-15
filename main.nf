@@ -60,7 +60,7 @@ if (!params.kraken2_db) {
     log.error "--kraken2_db must be specified"
 }
 
-if ((!params.skip_trimming || params.blast_target != none) && !params.blast_db) {
+if ((!params.skip_blast || params.blast_target != 'none') && !params.blast_db) {
     log.error "--blast_db must be specified, or else --blast_target 'none' must be passed"
 }
 
