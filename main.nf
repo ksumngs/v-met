@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+include { READS_INGEST } from './subworkflows/ingest.nf'
 include { cowsay } from './lib/cowsay.nf'
 include { vmet_logo } from './lib/logo.nf'
 
@@ -81,35 +82,28 @@ log.info(
 )
 
 workflow {
-    // Bring in the reads files
-    if (params.ont) {
-        RawReads = Channel
-            .fromPath("${params.input}/*.{fastq,fq}.gz")
-            .map{ file -> tuple(file.simpleName, file) }
-    }
-    else {
-        RawReads = Channel
-            .fromFilePairs("${params.input}/*{R1,R2,_1,_2}*.{fastq,fq}.gz")
-    }
+    LogFiles = Channel.empty()
+    VersionFiles = Channel.empty()
 
-    // Simplify the sample names
-    sample_rename(RawReads)
-    RenamedReads = sample_rename.out
+    // Bring in the reads files
+    READS_INGEST()
+    RawReads = READS_INGEST.out.sample_info
+    VersionFiles = VersionFiles.mix(READS_INGEST.out.versions)
 
     // Trim the reads
     if (!params.skip_trimming) {
         if (params.ont) {
-            nanofilt(RenamedReads)
+            nanofilt(RawReads)
             TrimmedReads = nanofilt.out
         }
         else
         {
-            trimmomatic(RenamedReads)
+            trimmomatic(RawReads)
             TrimmedReads = trimmomatic.out
         }
     }
     else {
-        TrimmedReads = RenamedReads
+        TrimmedReads = RawReads
     }
 
     kraken(TrimmedReads)
