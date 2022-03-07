@@ -4,6 +4,8 @@ nextflow.enable.dsl = 2
 include { KRAKEN2 } from './modules/ksumngs/nf-modules/kraken2/main.nf'
 include { KRAKEN2_DBPREPARATION } from './modules/local/kraken2/dbpreparation.nf'
 include { KRAKENTOOLS_EXTRACT } from './modules/ksumngs/nf-modules/krakentools/extract/main.nf'
+include { KRAKENTOOLS_KREPORT2KRONA } from './modules/ksumngs/nf-modules/krakentools/kreport2krona/main.nf'
+include { KRONA_IMPORTTEXT } from './modules/ksumngs/nf-modules/krona/importtext/main.nf'
 include { QC } from './subworkflows/qc.nf'
 include { READS_INGEST } from './subworkflows/ingest.nf'
 include { TRIMMING } from './subworkflows/trimming.nf'
@@ -128,14 +130,19 @@ workflow {
     VersionFiles = VersionFiles.mix(KRAKEN2.out.versions)
     LogFiles = LogFiles.mix(KRAKEN2.out.kreport)
 
+    // Make a Krona chart
+    KRAKENTOOLS_KREPORT2KRONA(KRAKEN2.out.kreport)
+    KRONA_IMPORTTEXT(
+        KRAKENTOOLS_KREPORT2KRONA.out.krona
+            .map{ it.drop(1) }
+            .collect()
+        )
+    VersionFiles = VersionFiles.mix(KRAKENTOOLS_KREPORT2KRONA.out.versions)
+    VersionFiles = VersionFiles.mix(KRONA_IMPORTTEXT.out.versions)
+
     KrakenReports = KRAKEN2.out.reports
     UnclassifiedReads = KRAKEN2.out.unclassified
     ClassifiedReads = KRAKEN2.out.classified
-
-    kraken2krona(KrakenReports)
-    KrakenKronas = kraken2krona.out
-
-    krona(KrakenKronas.collect())
 
     if (!params.skip_blast && params.blast_target != 'none') {
         if (params.blast_target == 'all') {
