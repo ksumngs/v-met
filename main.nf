@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+include { QC } from './subworkflows/qc.nf'
 include { READS_INGEST } from './subworkflows/ingest.nf'
 include { cowsay } from './lib/cowsay.nf'
 include { vmet_logo } from './lib/logo.nf'
@@ -89,6 +90,13 @@ workflow {
     READS_INGEST()
     RawReads = READS_INGEST.out.sample_info
     VersionFiles = VersionFiles.mix(READS_INGEST.out.versions)
+
+    // Check out the read quality
+    if (!params.skip_qc) {
+        QC(RawReads)
+        LogFiles = LogFiles.mix(QC.out.report)
+        VersionFiles = VersionFiles.mix(QC.out.versions)
+    }
 
     // Trim the reads
     if (!params.skip_trimming) {
