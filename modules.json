@@ -6,6 +6,9 @@
             "cat/fastq": {
                 "git_sha": "da5728117c6caaee428ed8729e88b93abc60c5fc"
             },
+            "kraken2": {
+                "git_sha": "e0b2138159eab5b54a4618f320895a308fcf53fa"
+            },
             "nanofilt": {
                 "git_sha": "8e2140d607a9bbbf82ddf1604609f22e7371f9fb"
             },
