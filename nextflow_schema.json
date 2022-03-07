@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/v-met/master/nextflow_schema.json",
     "title": "v-met pipeline parameters",
-    "description": "A bare-bones, ridiculously simple metagenomics pipeline for viruses using Kraken 2",
+    "description": "A bare-bones, ridiculously simple metagenomics pipeline for viruses",
     "type": "object",
     "definitions": {
         "input_output_options": {
@@ -124,7 +124,8 @@
                 "blast_db": {
                     "type": "string",
                     "default": null,
-                    "fa_icon": "fas fa-database"
+                    "fa_icon": "fas fa-database",
+                    "description": "Path to a folder containing a BLAST nt database"
                 },
                 "blast_target": {
                     "type": "string",
