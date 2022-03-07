@@ -5,6 +5,7 @@ include { BLAST_ADDHEADER } from './modules/local/blast/addheader.nf'
 include { BLAST_BLASTN } from './modules/nf-core/modules/blast/blastn/main.nf'
 include { BLAST_DBPREPARATION } from './modules/local/blast/dbpreparation.nf'
 include { CAT_FASTQ as UNZIP_FASTA } from './modules/ksumngs/nf-modules/cat/fastq/main.nf'
+include { CUSTOM_DUMPSOFTWAREVERSIONS } from './modules/nf-core/modules/custom/dumpsoftwareversions/main.nf'
 include { KRAKEN2 } from './modules/ksumngs/nf-modules/kraken2/main.nf'
 include { KRAKEN2_DBPREPARATION } from './modules/local/kraken2/dbpreparation.nf'
 include { KRAKENTOOLS_EXTRACT } from './modules/ksumngs/nf-modules/krakentools/extract/main.nf'
@@ -212,4 +213,10 @@ workflow {
     // Create a MultiQC report
     MULTIQC(LogFiles)
     VersionFiles = VersionFiles.mix(MULTIQC.out.versions)
+
+    CUSTOM_DUMPSOFTWAREVERSIONS(
+        VersionFiles
+            .unique()
+            .collectFile(name: 'collated_versions.yml')
+    )
 }
