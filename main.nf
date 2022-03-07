@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+include { BLAST_BLASTN } from './modules/nf-core/modules/blast/blastn/main.nf'
 include { CAT_FASTQ as UNZIP_FASTA } from './modules/ksumngs/nf-modules/cat/fastq/main.nf'
 include { KRAKEN2 } from './modules/ksumngs/nf-modules/kraken2/main.nf'
 include { KRAKEN2_DBPREPARATION } from './modules/local/kraken2/dbpreparation.nf'
@@ -176,6 +177,10 @@ workflow {
             false
         )
         VersionFiles = VersionFiles.mix(UNZIP_FASTA.out.versions)
+
+        // BLAST reads
+        BLAST_BLASTN(UNZIP_FASTA.out.reads, file("${params.blast_db}", checkIfExists: true, type: 'dir'))
+        VersionFiles = VersionFiles.mix(BLAST_BLASTN.out.versions)
     }
 }
 
