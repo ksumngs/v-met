@@ -2,53 +2,52 @@
 nextflow.enable.dsl = 2
 
 include { cowsay } from './lib/cowsay.nf'
+include { vmet_logo } from './lib/logo.nf'
+
+cowsay(vmet_logo())
 
 if (params.help) {
-    cowsay(
-    """\
-====================================================================================
-                                        v-met
-====================================================================================
+    log.info(
+        """\
+        v-met - A bare-bones, ridiculously simple metagenomics pipeline for viruses
 
-    v-met - A bare-bones, ridiculously simple metagenomics pipeline for viruses
+        Usage:
 
-    Usage:
+            nextflow run ksumngs/v-met
 
-        nextflow run ksumngs/v-met
+        Options:
 
-    Options:
+            --input             Relative or absolute path to directory containing
+                                gzipped fastq files or a TSV samplesheet
+                                    type: path, default: .
 
-        --input             Relative or absolute path to directory containing
-                            gzipped fastq files
-                                type: path, default: .
+            --platform          Type of reads to process. Options are 'illumina' and
+                                'nanopore'
+                                    type: string, default: none
 
-        --platform          Type of reads to process. Options are 'illumina' and
-                            'nanopore'
-                                type: string, default: none
+            --kraken2_db        Kraken2-compatible database for classifying reads
+                                    type: path, default: none
 
-        --kraken2_db        Kraken2-compatible database for classifying reads
-                                type: path, default: none
+            --blast_db          Folder containing an NCBI BLAST NT database
+                                    type: path, default: none
 
-        --blast_db          Folder containing an NCBI BLAST NT database
-                                type: path, default: none
+            --blast_target      Which reads to BLAST. Possible options are
+                                'none'          Disable BLAST
+                                'all'           BLAST all reads
+                                'unclassified'  BLAST only Kraken's unclassified reads
+                                'classified'    BLAST only Kraken's classified reads
+                                - or -
+                                A space-separated list of NCBI taxids to keep reads
+                                that were classified as matching those taxids
+                                Defaults to keeping unclassified and viral reads.
+                                    type: string, default: '0 10239'
 
-        --blast_target      Which reads to BLAST. Possible options are
-                              'none'          Disable BLAST
-                              'all'           BLAST all reads
-                              'unclassified'  BLAST only Kraken's unclassified reads
-                              'classified'    BLAST only Kraken's classified reads
-                              - or -
-                              A space-separated list of NCBI taxids to keep reads
-                              that were classified as matching those taxids
-                            Defaults to keeping unclassified and viral reads.
-                                type: string, default: '0 10239'
+        For more information on usage and parameters, visit the website at
+            https://ksumngs.github.io/v-met
+        """.stripIndent()
+        )
 
-    For more information on usage and parameters, visit the website at
-        https://ksumngs.github.io/v-met
-    """
-    )
-
-exit 0
+    exit 0
 }
 
 if (!params.ont && !params.pe) {
