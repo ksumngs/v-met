@@ -56,8 +56,10 @@ if (params.platform != 'illumina' && params.platform != 'nanopore') {
     exit 1
 }
 
+// Verify that a kraken database was specified. We'll verify that it exists later
 if (!params.kraken2_db) {
-    log.error "--kraken2_db must be specified"
+    log.error "ERROR: --kraken2_db must be specified"
+    exit 1
 }
 
 if ((!params.skip_blast || params.blast_target != 'none') && !params.blast_db) {
