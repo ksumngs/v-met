@@ -68,23 +68,16 @@ if ((!params.skip_blast && params.blast_target != 'none') && !params.blast_db) {
     exit 1
 }
 
-cowsay(
-"""\
-====================================================================================
-                                        v-met
-====================================================================================
-
-Input folder:           ${params.input}
-Sequencing platform:    ${params.platform}
-    Illumina?:          ${params.pe}
-    Nanopore?:          ${params.ont}
-Reference genome:       ${params.genome}
-Kraken2 Database:       ${params.kraken2_db}
-BLAST Database:         ${params.blast_db}
-Reads to BLAST:         '${params.blast_target}'
-Output folder           ${params.outdir}
-Diagnostics folder:     ${params.tracedir}
-"""
+log.info(
+    """\
+    Input folder:           ${params.input}
+    Sequencing platform:    ${params.platform}
+    Kraken2 Database:       ${params.kraken2_db}
+    BLAST Database:         ${params.blast_db}
+    Reads to BLAST:         '${params.blast_target}'
+    Output folder           ${params.outdir}
+    Diagnostics folder:     ${params.tracedir}
+    """.stripIndent()
 )
 
 workflow {
