@@ -1,8 +1,7 @@
 Viral Metagenomics with v-met
 =============================
 
-Welcome to the documentation for the v-met pipeline. This is still very much a
-work-in-progress, so keep checking back here for more up-to-date information.
+Welcome to the documentation for the v-met pipeline.
 
 .. toctree::
    :maxdepth: 2
