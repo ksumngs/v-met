@@ -55,14 +55,13 @@ jobs:
     strategy:
       matrix:
         parameters:
-          - "--keep_taxid classified"
-          - "--kraken2_db https://genome-idx.s3.amazonaws.com/kraken/16S_Silva132_20200326.tgz --keep_taxid unclassified"
+          - "--blast_target classified"
+          - "--blast_target unclassified"
+          - "--blast_target all"
           - "--kraken2_db ~/kraken2-db"
           - "--skip_qc"
           - "--skip_trimming"
-          - "--skip_filtering"
-          - "--skip_haplotype"
-          - "--skip_phylogenetics"
+          - "--skip_blast"
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v2
