@@ -9,17 +9,35 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v2
+        with:
+          submodules: true
       - name: Install Sphinx 🇪🇬
         uses: logikal-code/pip-install@v1.0.0
         with:
           requirements: docs/requirements.txt
+      - name: Install nf-core Tools 🍎
+        run: |
+          python -m pip install git+https://github.com/krokicki/tools@dev
+      - name: Convert schema to docs 🧑‍⚖️
+        run: |
+          echo "# Complete Parameter Reference" > docs/parameters.md
+          echo "" >> docs/parameters.md
+          echo "Every single parameter in the entire pipeline is described here. If you need to" >> docs/parameters.md
+          echo "tweak every little detail of how your JEV samples are analyzed, you've come to" >> docs/parameters.md
+          echo "the right place! Note that *every* parameter is described here, even those that" >> docs/parameters.md
+          echo "shouldn't be used, so proceed with caution!" >> docs/parameters.md
+          nf-core schema docs nextflow_schema.json | tail -n+4 >> docs/parameters.md
       - name: Build docs 📝
         run: |
           sphinx-build -b html docs docs/_build
-      - name: Disable Jekyll ⛔
-        run: |
-          touch docs/_build/.nojekyll
+      - name: Collect 🧺
+        uses: actions/upload-artifact@v2
+        with:
+          name: documentation
+          path: |
+            docs/_build
       - name: Deploy 🚀
+        if: ${{ !env.ACT }}
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
           branch: gh-pages
