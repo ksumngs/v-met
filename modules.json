@@ -9,6 +9,9 @@
             "kraken2": {
                 "git_sha": "e0b2138159eab5b54a4618f320895a308fcf53fa"
             },
+            "krakentools/extract": {
+                "git_sha": "181a04778a81494dc71b1d68b514b43cfef1512c"
+            },
             "nanofilt": {
                 "git_sha": "8e2140d607a9bbbf82ddf1604609f22e7371f9fb"
             },

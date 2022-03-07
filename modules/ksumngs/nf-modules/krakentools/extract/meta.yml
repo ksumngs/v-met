@@ -1,0 +1,50 @@
+name: krakentools_extract
+description: Extract reads classified by Kraken2
+keywords:
+  - kraken
+  - metagenomics
+  - fastq
+tools:
+  - krakentools:
+      description: KrakenTools is a suite of scripts to be used for post-analysis of Kraken/KrakenUniq/Kraken2/Bracken results. Please cite the relevant paper if using KrakenTools with any of the listed programs.
+      homepage: https://ccb.jhu.edu/software/krakentools/
+      tool_dev_url: https://github.com/jenniferlu717/KrakenTools
+      licence: ['GPL v3']
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - reads:
+      type: file
+      description: Reads that Kraken has classified
+      pattern: "*.fastq.gz"
+  - krakenfile:
+      type: file
+      description: Kraken output describing the classification of each reads
+  - kreport:
+        type: file
+        description: Kraken report with aggregate classification stats
+  - taxids:
+      type: string
+      description: Space-separated list of taxonomic ids to extract
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - fastq:
+      type: file
+      description: Extracted reads
+      pattern: "*.fastq.gz"
+
+authors:
+  - "@MillironX"
