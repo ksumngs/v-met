@@ -3,6 +3,7 @@ nextflow.enable.dsl = 2
 
 include { QC } from './subworkflows/qc.nf'
 include { READS_INGEST } from './subworkflows/ingest.nf'
+include { TRIMMING } from './subworkflows/trimming.nf'
 include { cowsay } from './lib/cowsay.nf'
 include { vmet_logo } from './lib/logo.nf'
 
@@ -100,18 +101,13 @@ workflow {
 
     // Trim the reads
     if (!params.skip_trimming) {
-        if (params.ont) {
-            nanofilt(RawReads)
-            TrimmedReads = nanofilt.out
-        }
-        else
-        {
-            trimmomatic(RawReads)
-            TrimmedReads = trimmomatic.out
-        }
+        TRIMMING(RawReads)
+        TRIMMING.out.fastq.set{ TrimmedReads }
+        LogFiles = LogFiles.mix(TRIMMING.out.log_out)
+        VersionFiles = VersionFiles.mix(TRIMMING.out.versions)
     }
     else {
-        TrimmedReads = RawReads
+        RawReads.set{ TrimmedReads }
     }
 
     kraken(TrimmedReads)
