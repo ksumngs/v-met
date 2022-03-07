@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema",
     "$id": "https://raw.githubusercontent.com/v-met/master/nextflow_schema.json",
     "title": "v-met pipeline parameters",
-    "description": "A bare-bones, ridiculously simple metagenomics pipeline for viruses",
+    "description": "A bare-bones, ridiculously simple metagenomics pipeline for viruses using Kraken 2",
     "type": "object",
     "definitions": {
         "input_output_options": {
@@ -10,42 +10,284 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": [
-                "input"
-            ],
             "properties": {
                 "input": {
                     "type": "string",
                     "format": "file-path",
-                    "mimetype": "text/csv",
-                    "pattern": "^\\S+\\.csv$",
-                    "schema": "assets/schema_input.json",
-                    "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re//usage#samplesheet-input).",
-                    "fa_icon": "fas fa-file-csv"
+                    "description": "Path the folder containing input reads.",
+                    "help_text": "For Illumina (paired-end) reads, the file names must be identical until the ending underscore with a read number, e.g. 'sample1_S10_L001_R1_001.fastq.gz' and 'sample1_S10_L001_R2_001.fastq.gz'. The read number must be designated using either '_1' and '_2' or '_R1' and '_R2'. For Nanopore reads, each fastq file is assumed to be a unique sample, so, e.g. 'FAP01234_pass_barcode05_abcd01234_0.fastq.gz' and 'FAP01234_pass_barcode05_abcd01234_1.fastq.gz' are assumed to be different samples even though they are from the same barcode. All read files must be gzipped, and have the extension '.fastq.gz' or '.fq.gz'.",
+                    "fa_icon": "fas fa-folder",
+                    "default": "."
+                },
+                "platform": {
+                    "type": "string",
+                    "fa_icon": "fas fa-tram",
+                    "description": "NGS platform used to sequence the samples",
+                    "enum": [
+                        "illumina",
+                        "nanopore"
+                    ]
+                },
+                "paired": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-sort",
+                    "hidden": true,
+                    "description": "Flag to indicate whether the reads files are paired-end or not"
+                },
+                "interleaved": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-random",
+                    "description": "Whether paired-end reads interleaved into a single fastq file"
                 },
                 "outdir": {
                     "type": "string",
                     "description": "Path to the output directory where the results will be saved.",
                     "default": "./results",
                     "fa_icon": "fas fa-folder-open"
+                },
+                "publish_dir_mode": {
+                    "type": "string",
+                    "default": "copy",
+                    "fa_icon": "fab fa-leanpub",
+                    "description": "How to create results files",
+                    "enum": [
+                        "symlink",
+                        "relink",
+                        "link",
+                        "copy",
+                        "copyNoFollow",
+                        "move"
+                    ],
+                    "hidden": true
+                },
+                "tracedir": {
+                    "type": "string",
+                    "description": "Directory to keep pipeline Nextflow logs and reports.",
+                    "default": "${params.outdir}/pipeline_info",
+                    "fa_icon": "fas fa-cogs",
+                    "hidden": true
+                },
+                "help": {
+                    "type": "boolean",
+                    "description": "Display help text.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                },
+                "show_hidden_params": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-eye",
+                    "description": "Show all params when using `--help`",
+                    "hidden": true
+                },
+                "custom_config_version": {
+                    "type": "string",
+                    "description": "Git commit id for Institutional configs.",
+                    "default": "master",
+                    "fa_icon": "fas fa-history"
+                },
+                "custom_config_base": {
+                    "type": "string",
+                    "description": "Base directory for Institutional configs.",
+                    "default": "https://raw.githubusercontent.com/nf-core/configs/master",
+                    "fa_icon": "fas fa-globe"
+                }
+            },
+            "required": [
+                "platform"
+            ]
+        },
+        "kraken2_options": {
+            "title": "Kraken2 Options",
+            "type": "object",
+            "description": "Control how Kraken2 filters out host reads",
+            "default": "",
+            "properties": {
+                "kraken2_db": {
+                    "type": "string",
+                    "description": "Path to a Kraken2 database",
+                    "help_text": "The path to a [Kraken2 database](https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases) that will be used to filter out host reads in the pipeline. This path will be automatically mounted into the container environments if a containerized profile is used.\n\nCorresponds to the [--db](https://github.com/DerrickWood/kraken2/wiki/Manual#classification) option of Kraken2.",
+                    "fa_icon": "fas fa-database",
+                    "default": "None"
+                }
+            },
+            "required": [
+                "kraken2_db"
+            ],
+            "fa_icon": "fab fa-gitkraken"
+        },
+        "blast_options": {
+            "title": "BLAST options",
+            "type": "object",
+            "description": "Control what reads BLAST examines",
+            "default": "",
+            "properties": {
+                "blast_db": {
+                    "type": "string",
+                    "default": null,
+                    "fa_icon": "fas fa-database"
+                },
+                "blast_target": {
+                    "type": "string",
+                    "default": "0 10239",
+                    "fa_icon": "fas fa-bullseye",
+                    "description": "Taxonomic IDs to keep and analyze",
+                    "help_text": "A space-separated list (use quotes on the command line), of the taxonomic ids to keep based on Kraken2's classification.\n\nDefaults to keeping all unclassified reads and all viral reads. Note that this requires the host to be present in the Kraken2 database. When dealing with animals and the databases available from `kraken2-build`, this is not the case, and this parameter should be modified."
+                }
+            },
+            "required": [
+                "blast_db"
+            ]
+        },
+        "read_trimming_options": {
+            "title": "Read trimming options",
+            "type": "object",
+            "description": "Options for how strictly to quality control NGS reads",
+            "default": "",
+            "fa_icon": "fas fa-cut",
+            "properties": {
+                "trim_minlen": {
+                    "type": "integer",
+                    "default": 100,
+                    "fa_icon": "fas fa-ruler-horizontal",
+                    "description": "Minimum length of reads",
+                    "help_text": "Corresponds to the [MINLEN](http://www.usadellab.org/cms/?page=trimmomatic)\noption of Trimmomatic for Illumina reads.\n\nCorresponds to the [--length](https://github.com/wdecoster/nanofilt/#usage)\noption of NanoFilt for Nanopore reads."
+                },
+                "trim_maxlen": {
+                    "type": "integer",
+                    "default": 0,
+                    "fa_icon": "fas fa-ruler-vertical",
+                    "description": "Maximum length of reads",
+                    "help_text": "Only applies to Nanopore reads.\n\nCorresponds to the [--maxlength](https://github.com/wdecoster/nanofilt/#usage) option of\nNanoFilt."
+                },
+                "trim_adapters": {
+                    "type": "string",
+                    "default": "NexteraPE-PE.fa",
+                    "fa_icon": "fas fa-align-right",
+                    "description": "Sequences to be removed during trimming",
+                    "help_text": "Only applies to Illumina reads. Corresponds to the first\n[ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic. If left blank (i.e. `--trim_adapters ''`), then adapter trimming is\ndisabled. Custom adapters cannot be used, and the parameter corresponds to\none of the prebuilt sequence files provided with Trimmomatic.\n",
+                    "enum": [
+                        "NexteraPE-PE.fa",
+                        "TruSeq2-PE.fa",
+                        "TruSeq3-PE-2.fa",
+                        "TruSeq3-PE.fa"
+                    ]
+                },
+                "trim_mismatches": {
+                    "type": "integer",
+                    "default": 2,
+                    "description": "Max number of base mismatches to allow an adapter match",
+                    "help_text": "Only applies to Illumina reads. Corresponds to the second\n[ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic.",
+                    "fa_icon": "fab fa-buromobelexperte"
+                },
+                "trim_pclip": {
+                    "type": "integer",
+                    "default": 30,
+                    "description": "How accurate the match between adapter ligated reads must be for paired-end palindrome read alignment",
+                    "help_text": "Only applies to Illumina reads. Corresponds to the third\n[ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic.",
+                    "fa_icon": "fas fa-clipboard"
+                },
+                "trim_clip": {
+                    "type": "integer",
+                    "default": 10,
+                    "fa_icon": "far fa-clipboard",
+                    "description": "How accurate the match between any adapter must be against a read",
+                    "help_text": "Only applies to Illumina reads. Corresponds to the final\n[ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                },
+                "trim_winsize": {
+                    "type": "integer",
+                    "default": 50,
+                    "fa_icon": "fab fa-windows",
+                    "description": "Number of bases to average quality across",
+                    "help_text": "Only applies to Illumina reads. If set to `0`, then sliding window trimming is disabled.\nCorresponds to the first\n[SLIDINGWINDOW](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                },
+                "trim_winqual": {
+                    "type": "integer",
+                    "default": 15,
+                    "fa_icon": "fas fa-tachometer-alt",
+                    "description": "Required average window base quality",
+                    "help_text": "Only applies to Illumina reads. If set to `0`, then sliding window trimming is disabled.\nCorresponds to the second\n[SLIDINGWINDOW](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                },
+                "trim_leading": {
+                    "type": "integer",
+                    "default": 15,
+                    "fa_icon": "fas fa-angle-double-left",
+                    "description": "Minimum quality of bases in leading end of read",
+                    "help_text": "Only applies to Illumina reads. If set to `0`, LEADING trimming is disabled.\nCorresponds to the\n[LEADING](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                },
+                "trim_trailing": {
+                    "type": "integer",
+                    "default": 15,
+                    "fa_icon": "fas fa-angle-double-right",
+                    "description": "Minimum quality of bases in trailing end of read",
+                    "help_text": "Only applies to Illumina reads. If set to `0`, TRAILING trimming is disabled.\nCorresponds to the [TRAILING](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                },
+                "trim_headcrop": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of bases to remove from start of read",
+                    "help_text": "Corresponds to the [HEADCROP](http://www.usadellab.org/cms/?page=trimmomatic)\noption of Trimmomatic for Illumina reads. If set to `0`, then HEADCROP trimming is disabled.\n\nCorresponds to the [--headcrop](https://github.com/wdecoster/nanofilt/#usage)\noption of NanoFilt for Nanopore reads.",
+                    "fa_icon": "fas fa-angle-up"
+                },
+                "trim_crop": {
+                    "type": "integer",
+                    "default": 0,
+                    "description": "Number of bases to keep from start of read",
+                    "help_text": "Only applies to Illumina reads. If set to `0`, CROP trimming is disabled.\nCorresponds to the\n[CROP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.",
+                    "fa_icon": "fas fa-angle-down"
+                },
+                "trim_meanqual": {
+                    "type": "integer",
+                    "default": 7,
+                    "fa_icon": "fas fa-tachometer-alt",
+                    "description": "Minimum average base quality of entire reads",
+                    "help_text": "Applies only to ONT reads. Corresponds to the\n[--quality](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
+                },
+                "trim_mingc": {
+                    "type": "integer",
+                    "default": 0,
+                    "fa_icon": "fas fa-dna",
+                    "description": "Minimum GC count of reads",
+                    "help_text": "Only applies to ONT reads. Corresponds to the\n[--minGC](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
+                },
+                "trim_maxgc": {
+                    "type": "integer",
+                    "default": 0,
+                    "fa_icon": "fas fa-dna",
+                    "description": "Maximum GC count of reads",
+                    "help_text": "Only applies to ONT reads. Corresponds to the\n[--maxGC](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
+                },
+                "trim_tailcrop": {
+                    "type": "integer",
+                    "default": 0,
+                    "fa_icon": "fas fa-angle-down",
+                    "description": "Number of bases to remove from the end of each read",
+                    "help_text": "Only applies to ONT reads. Corresponds to the\n[--tailcrop](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
                 }
             }
         },
-        "reference_genome_options": {
-            "title": "Reference genome options",
+        "workflow_options": {
+            "title": "Workflow options",
             "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {}
-        },
-        "institutional_config_options": {
-            "title": "Institutional config options",
-            "type": "object",
-            "fa_icon": "fas fa-university",
-            "description": "Parameters used to describe centralised config profiles. These should not be edited.",
-            "help_text": "The centralised nf-core configuration profiles use a handful of pipeline parameters to describe themselves. This information is then printed to the Nextflow log when you run a pipeline. You should not need to change these values when you run a pipeline.",
-            "properties": {}
+            "description": "Options to skip portions of the workflow",
+            "default": "",
+            "fa_icon": "fas fa-directions",
+            "properties": {
+                "skip_trimming": {
+                    "type": "boolean",
+                    "description": "Skip read trimming (Trimmomatic/Nanofilt)",
+                    "fa_icon": "fas fa-cut"
+                },
+                "skip_qc": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-temperature-high",
+                    "description": "Skip FastQC"
+                },
+                "skip_blast": {
+                    "type": "boolean",
+                    "fa_icon": "fas fa-bomb",
+                    "description": "Skip BLASTing any reads"
+                }
+            }
         },
         "max_job_request_options": {
             "title": "Max job request options",
@@ -79,44 +321,12 @@
                     "pattern": "^(\\d+\\.?\\s*(s|m|h|day)\\s*)+$",
                     "hidden": true,
                     "help_text": "Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`"
-                }
-            }
-        },
-        "generic_options": {
-            "title": "Generic options",
-            "type": "object",
-            "fa_icon": "fas fa-file-import",
-            "description": "Less common options for the pipeline, typically set in a config file.",
-            "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
-            "properties": {
-                "help": {
+                },
+                "enable_conda": {
                     "type": "boolean",
-                    "description": "Display help text.",
-                    "fa_icon": "fas fa-question-circle",
-                    "hidden": true
-                },
-                "publish_dir_mode": {
-                    "type": "string",
-                    "default": "copy",
-                    "description": "Method used to save pipeline results to output directory.",
-                    "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
-                    "fa_icon": "fas fa-copy",
-                    "enum": [
-                        "symlink",
-                        "rellink",
-                        "link",
-                        "copy",
-                        "copyNoFollow",
-                        "move"
-                    ],
-                    "hidden": true
-                },
-                "tracedir": {
-                    "type": "string",
-                    "description": "Directory to keep pipeline Nextflow logs and reports.",
-                    "default": "${params.outdir}/pipeline_info",
-                    "fa_icon": "fas fa-cogs",
-                    "hidden": true
+                    "hidden": true,
+                    "description": "Run this workflow with Conda. You can also use '-profile conda' instead of providing this parameter.",
+                    "fa_icon": "fas fa-bacon"
                 }
             }
         }
@@ -126,134 +336,19 @@
             "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/definitions/kraken2_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
+            "$ref": "#/definitions/blast_options"
+        },
+        {
+            "$ref": "#/definitions/read_trimming_options"
+        },
+        {
+            "$ref": "#/definitions/workflow_options"
         },
         {
             "$ref": "#/definitions/max_job_request_options"
-        },
-        {
-            "$ref": "#/definitions/generic_options"
         }
-    ],
-    "properties": {
-        "platform": {
-            "type": "string",
-            "default": ""
-        },
-        "pe": {
-            "type": "string",
-            "default": "false"
-        },
-        "ont": {
-            "type": "string",
-            "default": "false"
-        },
-        "kraken2_db": {
-            "type": "string",
-            "default": ""
-        },
-        "blast_db": {
-            "type": "string",
-            "default": ""
-        },
-        "blast_target": {
-            "type": "string",
-            "default": "0 10239"
-        },
-        "trim_minlen": {
-            "type": "integer",
-            "default": 300
-        },
-        "trim_headcrop": {
-            "type": "integer",
-            "default": 0
-        },
-        "trim_adapters": {
-            "type": "string",
-            "default": "NexteraPE-PE.fa"
-        },
-        "trim_mismatches": {
-            "type": "integer",
-            "default": 2
-        },
-        "trim_pclip": {
-            "type": "integer",
-            "default": 30
-        },
-        "trim_clip": {
-            "type": "integer",
-            "default": 10
-        },
-        "trim_winsize": {
-            "type": "integer",
-            "default": 50
-        },
-        "trim_winqual": {
-            "type": "integer",
-            "default": 15
-        },
-        "trim_leading": {
-            "type": "integer",
-            "default": 15
-        },
-        "trim_trailing": {
-            "type": "integer",
-            "default": 15
-        },
-        "trim_crop": {
-            "type": "integer",
-            "default": 0
-        },
-        "trim_maxlen": {
-            "type": "integer",
-            "default": 0
-        },
-        "trim_meanqual": {
-            "type": "integer",
-            "default": 7
-        },
-        "trim_mingc": {
-            "type": "integer",
-            "default": 0
-        },
-        "trim_maxgc": {
-            "type": "integer",
-            "default": 0
-        },
-        "trim_tailcrop": {
-            "type": "integer",
-            "default": 0
-        },
-        "canu_corrected_error_rate": {
-            "type": "number",
-            "default": 0.144
-        },
-        "canu_min_read_length": {
-            "type": "integer",
-            "default": 1000
-        },
-        "canu_min_overlap_length": {
-            "type": "integer",
-            "default": 500
-        },
-        "canu_stop_on_low_coverage": {
-            "type": "integer",
-            "default": 10
-        },
-        "spades_mode": {
-            "type": "string",
-            "default": "rnaviral"
-        },
-        "skip_trimming": {
-            "type": "string",
-            "default": "false"
-        },
-        "skip_blast": {
-            "type": "string",
-            "default": "false"
-        }
-    }
+    ]
 }
