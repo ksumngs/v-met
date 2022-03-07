@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'v-met'
-copyright = '2021, K-State Molecular NGS Lab'
+copyright = '2022, K-State Molecular NGS Lab'
 author = 'Thomas A. Christensen II'
 
 
@@ -29,7 +29,8 @@ author = 'Thomas A. Christensen II'
 # ones.
 extensions = [
     'sphinx.ext.intersphinx',
-    'sphinx.ext.autosectionlabel'
+    'sphinx.ext.autosectionlabel',
+    'myst_parser',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -55,5 +56,5 @@ html_static_path = ['_static']
 
 intersphinx_mapping = {
     'nextflow': ('https://nextflow.io/docs/latest/', None),
-    'singularity': ('https://singularity.hpcng.org/user-docs/3.8', None)
+    'singularity': ('https://apptainer.org/user-docs/master', None)
 }
