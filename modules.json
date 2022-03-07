@@ -11,6 +11,9 @@
             },
             "nanostat": {
                 "git_sha": "89fce539f438cc7109b85fb7a5b75d5091382d54"
+            },
+            "trimmomatic": {
+                "git_sha": "78eb5cef96c8bbe59838c03c281780da50cfdef2"
             }
         },
         "nf-core/modules": {
