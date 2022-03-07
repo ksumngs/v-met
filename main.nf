@@ -10,6 +10,7 @@ include { KRAKEN2_DBPREPARATION } from './modules/local/kraken2/dbpreparation.nf
 include { KRAKENTOOLS_EXTRACT } from './modules/ksumngs/nf-modules/krakentools/extract/main.nf'
 include { KRAKENTOOLS_KREPORT2KRONA } from './modules/ksumngs/nf-modules/krakentools/kreport2krona/main.nf'
 include { KRONA_IMPORTTEXT } from './modules/ksumngs/nf-modules/krona/importtext/main.nf'
+include { MULTIQC } from './modules/nf-core/modules/multiqc/main.nf'
 include { QC } from './subworkflows/qc.nf'
 include { READS_INGEST } from './subworkflows/ingest.nf'
 include { SEQTK_SEQ } from './modules/nf-core/modules/seqtk/seq/main.nf'
@@ -200,4 +201,15 @@ workflow {
             file("${workflow.projectDir}/assets/headers/blast_outfmt6_header.txt", type: 'file', checkIfExists: true)
         )
     }
+
+    // Collect the logs
+    LogFiles = LogFiles
+        .map{ (it instanceof Path) ? it : it.drop(1) }
+        .mix(Channel.of(file("${workflow.projectDir}/assets/multiqc_config.yaml")))
+        .flatten()
+        .collect()
+
+    // Create a MultiQC report
+    MULTIQC(LogFiles)
+    VersionFiles = VersionFiles.mix(MULTIQC.out.versions)
 }
