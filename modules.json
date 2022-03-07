@@ -12,6 +12,9 @@
             "krakentools/extract": {
                 "git_sha": "181a04778a81494dc71b1d68b514b43cfef1512c"
             },
+            "krakentools/kreport2krona": {
+                "git_sha": "c6c9d4fad20eb77232756fc08403fbc4e9988ce2"
+            },
             "nanofilt": {
                 "git_sha": "8e2140d607a9bbbf82ddf1604609f22e7371f9fb"
             },
