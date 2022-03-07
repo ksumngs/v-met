@@ -62,8 +62,10 @@ if (!params.kraken2_db) {
     exit 1
 }
 
-if ((!params.skip_blast || params.blast_target != 'none') && !params.blast_db) {
-    log.error "--blast_db must be specified, or else --blast_target 'none' must be passed"
+// Verify that a BLAST database is specified if it is required
+if ((!params.skip_blast && params.blast_target != 'none') && !params.blast_db) {
+    log.error "ERROR: --blast_db must be specified, or else --blast_target 'none' must be passed"
+    exit 1
 }
 
 cowsay(
