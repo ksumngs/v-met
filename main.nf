@@ -140,23 +140,26 @@ workflow {
     VersionFiles = VersionFiles.mix(KRAKENTOOLS_KREPORT2KRONA.out.versions)
     VersionFiles = VersionFiles.mix(KRONA_IMPORTTEXT.out.versions)
 
-    KrakenReports = KRAKEN2.out.reports
-    UnclassifiedReads = KRAKEN2.out.unclassified
-    ClassifiedReads = KRAKEN2.out.classified
-
+    // BLAST reads, if requested
     if (!params.skip_blast && params.blast_target != 'none') {
+        // Remove the BLAST target reads into their own channel
         if (params.blast_target == 'all') {
-            TrimmedReads | convert2fasta | blast
+            TrimmedReads.set{ FilteredReads }
         }
         else if (params.blast_target == 'classified') {
-            ClassifiedReads | convert2fasta | blast
+            KRAKEN2.out.classified.set{ FilteredReads }
         }
         else if (params.blast_target == 'unclassified') {
-            UnclassifiedReads | convert2fasta | blast
+            KRAKEN2.out.unclassified.set{ FilteredReads }
         }
         else {
-            KrakenReads = TrimmedReads.join(KrakenReports)
-            KrakenReads | filterreads | convert2fasta | blast
+            TrimmedReads
+                .join(KRAKEN2.out.kraken)
+                .join(KRAKEN2.out.kreport)
+                .set{ ReadPlusReports }
+            KRAKENTOOLS_EXTRACT(ReadPlusReports, "${params.blast_target}")
+            KRAKENTOOLS_EXTRACT.out.fastq.set{ FilteredReads }
+            VersionFiles = VersionFiles.mix(KRAKENTOOLS_EXTRACT.out.versions)
         }
     }
 }
