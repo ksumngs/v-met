@@ -1,5 +1,11 @@
 {
     "name": "v-met",
     "homePage": "https://ksumngs.github.io/v-met",
-    "repos": {}
+    "repos": {
+        "ksumngs/nf-modules": {
+            "cat/fastq": {
+                "git_sha": "da5728117c6caaee428ed8729e88b93abc60c5fc"
+            }
+        }
+    }
 }
