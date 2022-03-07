@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+include { BLAST_ADDHEADER } from './modules/local/blast/addheader.nf'
 include { BLAST_BLASTN } from './modules/nf-core/modules/blast/blastn/main.nf'
 include { BLAST_DBPREPARATION } from './modules/local/blast/dbpreparation.nf'
 include { CAT_FASTQ as UNZIP_FASTA } from './modules/ksumngs/nf-modules/cat/fastq/main.nf'
@@ -192,5 +193,11 @@ workflow {
         // BLAST reads
         BLAST_BLASTN(UNZIP_FASTA.out.reads, BlastDb)
         VersionFiles = VersionFiles.mix(BLAST_BLASTN.out.versions)
+
+        // Add header to BLAST output
+        BLAST_ADDHEADER(
+            BLAST_BLASTN.out.txt,
+            file("${workflow.projectDir}/assets/headers/blast_outfmt6_header.txt", type: 'file', checkIfExists: true)
+        )
     }
 }
