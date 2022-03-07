@@ -1,6 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+include { CAT_FASTQ as UNZIP_FASTA } from './modules/ksumngs/nf-modules/cat/fastq/main.nf'
 include { KRAKEN2 } from './modules/ksumngs/nf-modules/kraken2/main.nf'
 include { KRAKEN2_DBPREPARATION } from './modules/local/kraken2/dbpreparation.nf'
 include { KRAKENTOOLS_EXTRACT } from './modules/ksumngs/nf-modules/krakentools/extract/main.nf'
@@ -8,6 +9,7 @@ include { KRAKENTOOLS_KREPORT2KRONA } from './modules/ksumngs/nf-modules/krakent
 include { KRONA_IMPORTTEXT } from './modules/ksumngs/nf-modules/krona/importtext/main.nf'
 include { QC } from './subworkflows/qc.nf'
 include { READS_INGEST } from './subworkflows/ingest.nf'
+include { SEQTK_SEQ } from './modules/nf-core/modules/seqtk/seq/main.nf'
 include { TRIMMING } from './subworkflows/trimming.nf'
 include { cowsay } from './lib/cowsay.nf'
 include { vmet_logo } from './lib/logo.nf'
@@ -161,6 +163,19 @@ workflow {
             KRAKENTOOLS_EXTRACT.out.fastq.set{ FilteredReads }
             VersionFiles = VersionFiles.mix(KRAKENTOOLS_EXTRACT.out.versions)
         }
+
+        // Convert the reads to FASTA to be a suitable BLAST query
+        SEQTK_SEQ(FilteredReads)
+        VersionFiles = VersionFiles.mix(SEQTK_SEQ.out.versions)
+        UNZIP_FASTA(
+            SEQTK_SEQ.out.fastx
+                .map{[
+                    ['id': it[0].id, 'single_end': true],
+                    it[1]
+                ]},
+            false
+        )
+        VersionFiles = VersionFiles.mix(UNZIP_FASTA.out.versions)
     }
 }
 
