@@ -1,0 +1,41 @@
+name: nanostat
+description: Quality and length reports for Oxford Nanopore sequencing reads
+keywords:
+  - quality control
+  - nanopore
+tools:
+  - nanostat:
+      description: Calculate statistics for Oxford Nanopore sequencing data and alignments
+      homepage: https://github.com/wdecoster/nanostat
+      doi: "10.1093/bioinformatics/bty149"
+      licence: ['MIT']
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - reads:
+      type: file
+      description: FASTQ reads file to analyze
+      pattern: "*.{fq.gz,fastq.gz}"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - log:
+      type: file
+      description: Read/alignment statistics report
+      pattern: "*.{log}"
+
+
+authors:
+  - "@MillironX"
