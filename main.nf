@@ -2,6 +2,7 @@
 nextflow.enable.dsl = 2
 
 include { BLAST_BLASTN } from './modules/nf-core/modules/blast/blastn/main.nf'
+include { BLAST_DBPREPARATION } from './modules/local/blast/dbpreparation.nf'
 include { CAT_FASTQ as UNZIP_FASTA } from './modules/ksumngs/nf-modules/cat/fastq/main.nf'
 include { KRAKEN2 } from './modules/ksumngs/nf-modules/kraken2/main.nf'
 include { KRAKEN2_DBPREPARATION } from './modules/local/kraken2/dbpreparation.nf'
@@ -178,8 +179,18 @@ workflow {
         )
         VersionFiles = VersionFiles.mix(UNZIP_FASTA.out.versions)
 
+        // Create a file object out of the BLAST database
+        BlastDb = file("${params.blast_db}", checkIfExists: true)
+        if (!BlastDb.isDirectory()) {
+            // The BLAST database is not a local directory, so we'll assume it is a
+            // tarballed database (local or remote)
+            BLAST_DBPREPARATION(BlastDb)
+            BlastDb = BLAST_DBPREPARATION.out.db
+            VersionFiles = VersionFiles.mix(BLAST_DBPREPARATION.out.versions)
+        }
+
         // BLAST reads
-        BLAST_BLASTN(UNZIP_FASTA.out.reads, file("${params.blast_db}", checkIfExists: true, type: 'dir'))
+        BLAST_BLASTN(UNZIP_FASTA.out.reads, BlastDb)
         VersionFiles = VersionFiles.mix(BLAST_BLASTN.out.versions)
     }
 }
