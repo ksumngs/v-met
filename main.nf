@@ -50,8 +50,9 @@ if (params.help) {
     exit 0
 }
 
-if (!params.ont && !params.pe) {
-    log.error "--platform <illumina,nanopore> must be specified"
+// Verify that the sequencing platform is specified
+if (params.platform != 'illumina' && params.platform != 'nanopore') {
+    log.error "ERROR: --platform <illumina,nanopore> must be specified"
     exit 1
 }
 
