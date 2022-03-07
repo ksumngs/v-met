@@ -1,6 +1,9 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl = 2
 
+include { KRAKEN2 } from './modules/ksumngs/nf-modules/kraken2/main.nf'
+include { KRAKEN2_DBPREPARATION } from './modules/local/kraken2/dbpreparation.nf'
+include { KRAKENTOOLS_EXTRACT } from './modules/ksumngs/nf-modules/krakentools/extract/main.nf'
 include { QC } from './subworkflows/qc.nf'
 include { READS_INGEST } from './subworkflows/ingest.nf'
 include { TRIMMING } from './subworkflows/trimming.nf'
@@ -110,11 +113,24 @@ workflow {
         RawReads.set{ TrimmedReads }
     }
 
-    kraken(TrimmedReads)
+    // Create a file object out of the Kraken2 database
+    KrakenDb = file("${params.kraken2_db}", checkIfExists: true)
+    if (!KrakenDb.isDirectory()) {
+        // The Kraken database is not a local directory, so we'll assume it is a
+        // tarballed database (local or remote)
+        KRAKEN2_DBPREPARATION(KrakenDb)
+        KrakenDb = KRAKEN2_DBPREPARATION.out.db
+        VersionFiles = VersionFiles.mix(KRAKEN2_DBPREPARATION.out.versions)
+    }
 
-    KrakenReports = kraken.out.reports
-    UnclassifiedReads = kraken.out.unclassified
-    ClassifiedReads = kraken.out.classified
+    // Do Kraken on the reads
+    KRAKEN2(TrimmedReads, KrakenDb)
+    VersionFiles = VersionFiles.mix(KRAKEN2.out.versions)
+    LogFiles = LogFiles.mix(KRAKEN2.out.kreport)
+
+    KrakenReports = KRAKEN2.out.reports
+    UnclassifiedReads = KRAKEN2.out.unclassified
+    ClassifiedReads = KRAKEN2.out.classified
 
     kraken2krona(KrakenReports)
     KrakenKronas = kraken2krona.out
