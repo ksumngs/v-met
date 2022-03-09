@@ -1,0 +1,30 @@
+name: krona_importtext
+description: Convert Krona text to a Krona HTML document
+keywords:
+  - krona
+  - metagenomics
+  - visualization
+tools:
+  - krona:
+      description: Krona Tools is a set of scripts to create Krona charts from several Bioinformatics tools as well as from text and XML files.
+      homepage: https://github.com/marbl/Krona/wiki
+      licence: ['BSD']
+
+input:
+  - krona:
+      type: file
+      description: Krona files
+      pattern: "*.{txt,krona}"
+
+output:
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - html:
+      type: file
+      description: HTML visualization Krona chart of all files
+      pattern: "krona.html"
+
+authors:
+  - "@MillironX"

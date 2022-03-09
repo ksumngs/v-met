@@ -1,0 +1,1 @@
+Sequence ID	Description	GI	Taxonomy ID	Scientific Name	Common Name	Raw score	Bit score	Query Coverage	E value	Percent identical	Subject length	Alignment length	Accession	Mismatches	Gap openings	Start of alignment in query	End of alignment in query	Start of alignment in subject	End of alignment in subject

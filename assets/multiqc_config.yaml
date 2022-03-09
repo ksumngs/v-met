@@ -1,0 +1,15 @@
+extra_fn_clean_exts:
+  - "kreport"
+  - type: regex
+    pattern: "_S[0-9]+_L[0-9]{3}_R[1-2]_[0-9]{3}"
+  - type: regex
+    pattern: "_[0-9]"
+  - "_nanostat.log"
+top_modules:
+  - "fastqc"
+  - "nanostat"
+module_order:
+  - fastqc
+  - nanostat
+  - trimmomatic
+  - kraken

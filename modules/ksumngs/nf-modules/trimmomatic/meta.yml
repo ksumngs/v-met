@@ -1,0 +1,44 @@
+name: trimmomatic
+description: Trim adapters and low-quality sequences from Illumina sequencing reads
+keywords:
+  - sort
+tools:
+  - trimmomatic:
+      description: A flexible read trimming tool for Illumina NGS data
+      homepage: http://www.usadellab.org/cms/?page=trimmomatic
+      tool_dev_url: https://github.com/usadellab/Trimmomatic
+      doi: "10.1093/bioinformatics/btu170"
+      licence: ['GPL v3']
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - reads:
+      type: file
+      description: FASTQ files of raw sequencing reads
+      pattern: "*.{fq.gz,fastq.gz}"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - fastq:
+      type: file
+      description: Trimmed and filtered reads
+      pattern: "*.{fastq.gz}"
+  - log:
+      type: file
+      description: File with stats on filtered reads
+      pattern: "*.{log}"
+
+authors:
+  - "@MillironX"
