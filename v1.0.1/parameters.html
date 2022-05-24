@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complete Parameter Reference &mdash; v-met  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Usage" href="usage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> v-met
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Complete Parameter Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#input-output-options">Input/output options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#kraken2-options">Kraken2 Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#blast-options">BLAST options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#read-trimming-options">Read trimming options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#workflow-options">Workflow options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#max-job-request-options">Max job request options</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">v-met</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Complete Parameter Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/parameters.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <!-- markdownlint-disable -->
+<section id="complete-parameter-reference">
+<h1>Complete Parameter Reference<a class="headerlink" href="#complete-parameter-reference" title="Permalink to this headline"></a></h1>
+<p>Every single parameter in the entire pipeline is described here. If you need to tweak every little detail of how your samples are analyzed, you’ve come to the right place! Note that <em>every</em> parameter is described here, even those that shouldn’t be used, so proceed with caution!</p>
+<section id="input-output-options">
+<h2>Input/output options<a class="headerlink" href="#input-output-options" title="Permalink to this headline"></a></h2>
+<p>Define where the pipeline should find input data and save output data.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">input</span></code></p></td>
+<td><p>Path the folder containing input reads. <details><summary>Help</summary><small>For Illumina (paired-end) reads, the file names must be identical until the ending underscore with a read number, e.g. ‘sample1_S10_L001_R1_001.fastq.gz’ and ‘sample1_S10_L001_R2_001.fastq.gz’. The read number must be designated using either ‘_1’ and ‘_2’ or ‘_R1’ and ‘_R2’. For Nanopore reads, each fastq file is assumed to be a unique sample, so, e.g. ‘FAP01234_pass_barcode05_abcd01234_0.fastq.gz’ and ‘FAP01234_pass_barcode05_abcd01234_1.fastq.gz’ are assumed to be different samples even though they are from the same barcode. All read files must be gzipped, and have the extension ‘.fastq.gz’ or ‘.fq.gz’.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">platform</span></code></p></td>
+<td><p>NGS platform used to sequence the samples</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">paired</span></code></p></td>
+<td><p>Flag to indicate whether the reads files are paired-end or not</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">interleaved</span></code></p></td>
+<td><p>Whether paired-end reads interleaved into a single fastq file</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">outdir</span></code></p></td>
+<td><p>Path to the output directory where the results will be saved.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>./results</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">publish_dir_mode</span></code></p></td>
+<td><p>How to create results files</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>copy</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tracedir</span></code></p></td>
+<td><p>Directory to keep pipeline Nextflow logs and reports.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>${params.outdir}/pipeline_info</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">help</span></code></p></td>
+<td><p>Display help text.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">show_hidden_params</span></code></p></td>
+<td><p>Show all params when using <code class="docutils literal notranslate"><span class="pre">--help</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">custom_config_version</span></code></p></td>
+<td><p>Git commit id for Institutional configs.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>master</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">custom_config_base</span></code></p></td>
+<td><p>Base directory for Institutional configs.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>https://raw.githubusercontent.com/nf-core/configs/master</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="kraken2-options">
+<h2>Kraken2 Options<a class="headerlink" href="#kraken2-options" title="Permalink to this headline"></a></h2>
+<p>Control how Kraken2 filters out host reads</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">kraken2_db</span></code></p></td>
+<td><p>Path to a Kraken2 database <details><summary>Help</summary><small>The path to a <a class="reference external" href="https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases">Kraken2 database</a> that will be used to filter out host reads in the pipeline. This path will be automatically mounted into the container environments if a containerized profile is used.  Corresponds to the <a class="reference external" href="https://github.com/DerrickWood/kraken2/wiki/Manual#classification">–db</a> option of Kraken2.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>None</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="blast-options">
+<h2>BLAST options<a class="headerlink" href="#blast-options" title="Permalink to this headline"></a></h2>
+<p>Control what reads BLAST examines</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">blast_db</span></code></p></td>
+<td><p>Path to a folder containing a BLAST nt database</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">blast_target</span></code></p></td>
+<td><p>Taxonomic IDs to keep and analyze <details><summary>Help</summary><small>A space-separated list (use quotes on the command line), of the taxonomic ids to keep based on Kraken2’s classification.  Defaults to keeping all unclassified reads and all viral reads. Note that this requires the host to be present in the Kraken2 database. When dealing with animals and the databases available from <code class="docutils literal notranslate"><span class="pre">kraken2-build</span></code>, this is not the case, and this parameter should be modified.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>0 10239</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="read-trimming-options">
+<h2>Read trimming options<a class="headerlink" href="#read-trimming-options" title="Permalink to this headline"></a></h2>
+<p>Options for how strictly to quality control NGS reads</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trim_minlen</span></code></p></td>
+<td><p>Minimum length of reads <details><summary>Help</summary><small>Corresponds to the <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">MINLEN</a> option of Trimmomatic for Illumina reads.  Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–length</a> option of NanoFilt for Nanopore reads.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>100</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">trim_maxlen</span></code></p></td>
+<td><p>Maximum length of reads <details><summary>Help</summary><small>Only applies to Nanopore reads.  Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–maxlength</a> option of NanoFilt.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trim_adapters</span></code></p></td>
+<td><p>Sequences to be removed during trimming <details><summary>Help</summary><small>Only applies to Illumina reads. Corresponds to the first <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">ILLUMINACLIP</a> option of Trimmomatic. If left blank (i.e. <code class="docutils literal notranslate"><span class="pre">--trim_adapters</span> <span class="pre">''</span></code>), then adapter trimming is disabled. Custom adapters cannot be used, and the parameter corresponds to one of the prebuilt sequence files provided with Trimmomatic. </small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>NexteraPE-PE.fa</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">trim_mismatches</span></code></p></td>
+<td><p>Max number of base mismatches to allow an adapter match <details><summary>Help</summary><small>Only applies to Illumina reads. Corresponds to the second <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">ILLUMINACLIP</a> option of Trimmomatic.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trim_pclip</span></code></p></td>
+<td><p>How accurate the match between adapter ligated reads must be for paired-end palindrome read alignment <details><summary>Help</summary><small>Only applies to Illumina reads. Corresponds to the third <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">ILLUMINACLIP</a> option of Trimmomatic.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>30</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">trim_clip</span></code></p></td>
+<td><p>How accurate the match between any adapter must be against a read <details><summary>Help</summary><small>Only applies to Illumina reads. Corresponds to the final <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">ILLUMINACLIP</a> option of Trimmomatic.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trim_winsize</span></code></p></td>
+<td><p>Number of bases to average quality across <details><summary>Help</summary><small>Only applies to Illumina reads. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, then sliding window trimming is disabled. Corresponds to the first <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">SLIDINGWINDOW</a> option of Trimmomatic.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>50</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">trim_winqual</span></code></p></td>
+<td><p>Required average window base quality <details><summary>Help</summary><small>Only applies to Illumina reads. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, then sliding window trimming is disabled. Corresponds to the second <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">SLIDINGWINDOW</a> option of Trimmomatic.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trim_leading</span></code></p></td>
+<td><p>Minimum quality of bases in leading end of read <details><summary>Help</summary><small>Only applies to Illumina reads. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, LEADING trimming is disabled. Corresponds to the <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">LEADING</a> option of Trimmomatic.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">trim_trailing</span></code></p></td>
+<td><p>Minimum quality of bases in trailing end of read <details><summary>Help</summary><small>Only applies to Illumina reads. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, TRAILING trimming is disabled. Corresponds to the <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">TRAILING</a> option of Trimmomatic.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trim_headcrop</span></code></p></td>
+<td><p>Number of bases to remove from start of read <details><summary>Help</summary><small>Corresponds to the <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">HEADCROP</a> option of Trimmomatic for Illumina reads. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, then HEADCROP trimming is disabled.  Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–headcrop</a> option of NanoFilt for Nanopore reads.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">trim_crop</span></code></p></td>
+<td><p>Number of bases to keep from start of read <details><summary>Help</summary><small>Only applies to Illumina reads. If set to <code class="docutils literal notranslate"><span class="pre">0</span></code>, CROP trimming is disabled. Corresponds to the <a class="reference external" href="http://www.usadellab.org/cms/?page=trimmomatic">CROP</a> option of Trimmomatic.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trim_meanqual</span></code></p></td>
+<td><p>Minimum average base quality of entire reads <details><summary>Help</summary><small>Applies only to ONT reads. Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–quality</a> option of NanoFilt.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>7</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">trim_mingc</span></code></p></td>
+<td><p>Minimum GC count of reads <details><summary>Help</summary><small>Only applies to ONT reads. Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–minGC</a> option of NanoFilt.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trim_maxgc</span></code></p></td>
+<td><p>Maximum GC count of reads <details><summary>Help</summary><small>Only applies to ONT reads. Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–maxGC</a> option of NanoFilt.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">trim_tailcrop</span></code></p></td>
+<td><p>Number of bases to remove from the end of each read <details><summary>Help</summary><small>Only applies to ONT reads. Corresponds to the <a class="reference external" href="https://github.com/wdecoster/nanofilt/#usage">–tailcrop</a> option of NanoFilt.</small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="workflow-options">
+<h2>Workflow options<a class="headerlink" href="#workflow-options" title="Permalink to this headline"></a></h2>
+<p>Options to skip portions of the workflow</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">skip_trimming</span></code></p></td>
+<td><p>Skip read trimming (Trimmomatic/Nanofilt)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">skip_qc</span></code></p></td>
+<td><p>Skip FastQC</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">skip_blast</span></code></p></td>
+<td><p>Skip BLASTing any reads</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="max-job-request-options">
+<h2>Max job request options<a class="headerlink" href="#max-job-request-options" title="Permalink to this headline"></a></h2>
+<p>Set the top limit for requested resources for any single job.</p>
+<table class="colwidths-auto docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_cpus</span></code></p></td>
+<td><p>Maximum number of CPUs that can be requested for any single job. <details><summary>Help</summary><small>Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. <code class="docutils literal notranslate"><span class="pre">--max_cpus</span> <span class="pre">1</span></code></small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">integer</span></code></p></td>
+<td><p></p></td>
+<td><p>16</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_memory</span></code></p></td>
+<td><p>Maximum amount of memory that can be requested for any single job. <details><summary>Help</summary><small>Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. <code class="docutils literal notranslate"><span class="pre">--max_memory</span> <span class="pre">'8.GB'</span></code></small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>128.GB</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_time</span></code></p></td>
+<td><p>Maximum amount of time that can be requested for any single job. <details><summary>Help</summary><small>Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. <code class="docutils literal notranslate"><span class="pre">--max_time</span> <span class="pre">'2.h'</span></code></small></details></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></td>
+<td><p></p></td>
+<td><p>240.h</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">enable_conda</span></code></p></td>
+<td><p>Run this workflow with Conda. You can also use ‘-profile conda’ instead of providing this parameter.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">boolean</span></code></p></td>
+<td><p></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, K-State Molecular NGS Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v1.0.1
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="parameters.html">v1.0.1</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

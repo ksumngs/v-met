@@ -146,7 +146,7 @@ ln -s <span class="nv">$KRAKEN2_DIR</span>/kraken2<span class="o">{</span>,-buil
 <span class="nb">cd</span>
 kraken2-build --download-taxonomy --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
 <span class="nv">LIBRARIES</span><span class="o">=(</span>archaea bacteria plasmid viral plant fungi protozoa UniVec_Core plastid mitochondrion invertebrate vertebrate_mammalian vertebrate_other<span class="o">)</span>
-<span class="k">for</span> LIB in <span class="si">${</span><span class="nv">LIBRARIES</span><span class="p">[@]</span><span class="si">}</span><span class="p">;</span> <span class="k">do</span>
+<span class="k">for</span> LIB <span class="k">in</span> <span class="si">${</span><span class="nv">LIBRARIES</span><span class="p">[@]</span><span class="si">}</span><span class="p">;</span> <span class="k">do</span>
   kraken2-build --download-library <span class="nv">$LIB</span> --db <span class="nv">$KRAKEN2_DEFAULT_DB</span> --no-masking
 <span class="k">done</span>
 
@@ -181,7 +181,7 @@ kraken2-build --clean --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
 <section id="ncbi-nt-blast-database">
 <h3>NCBI nt BLAST Database<a class="headerlink" href="#ncbi-nt-blast-database" title="Permalink to this headline"></a></h3>
 <p>Downloading the BLAST database is technically optional, as its use can be
-bypassed by passing <code class="docutils literal notranslate"><span class="pre">none</span></code> to <a class="reference internal" href="parameters.html#blast-target"><span class="std std-ref">–blast_target</span></a> parameter.</p>
+bypassed by passing <code class="docutils literal notranslate"><span class="pre">none</span></code> to <a class="reference internal" href="parameters.html#blast-options"><span class="std std-ref">–blast_target</span></a> parameter.</p>
 <p>To download the database, use NCBI’s
 <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK569850">update_blastdb.pl</a> script, like</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
@@ -201,7 +201,7 @@ the common and scientific names in the BLAST results.</p>
 </div>
 <p>If you need a specific version, use Nextflow’s <code class="docutils literal notranslate"><span class="pre">-r</span></code> option with the version
 tag.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nextflow</span> <span class="n">run</span> <span class="n">ksumngs</span><span class="o">/</span><span class="n">v</span><span class="o">-</span><span class="n">met</span> <span class="o">-</span><span class="n">r</span> <span class="n">v0</span><span class="o">.</span><span class="mf">1.0</span><span class="o">-</span><span class="n">alpha</span> <span class="o">...</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nextflow</span> <span class="n">run</span> <span class="n">ksumngs</span><span class="o">/</span><span class="n">v</span><span class="o">-</span><span class="n">met</span> <span class="o">-</span><span class="n">r</span> <span class="n">v0</span><span class="mf">.1.0</span><span class="o">-</span><span class="n">alpha</span> <span class="o">...</span>
 </pre></div>
 </div>
 <p>If you <em>really</em> want to download the pipeline before use, you can run</p>
@@ -228,7 +228,7 @@ from the code itself.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, K-State Molecular NGS Lab.</p>
+    <p>&#169; Copyright 2022, K-State Molecular NGS Lab.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
@@ -241,7 +241,20 @@ from the code itself.</p>
       </div>
     </section>
   </div>
-  <script>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v1.0.1
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="install.html">v1.0.1</a></dd>
+    </dl>
+  </div>
+</div><script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usage &mdash; v-met  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Complete Parameter Reference" href="parameters.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> v-met
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#input-preparation">Input Preparation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-a-directory-as-input">Using a Directory as Input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-a-samplesheet-as-input">Using a Samplesheet as Input</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#single-end-example">Single-end example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#paired-end-example">Paired-end example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#profile-selection">Profile Selection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mandatory-parameters">Mandatory Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setting-up-for-hpc-job-schedulers">Setting up for HPC Job Schedulers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#process-labels">Process Labels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Complete Parameter Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">v-met</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usage.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="usage">
+<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h1>
+<p>Basic jist:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nextflow</span> <span class="n">run</span> <span class="n">ksumngs</span><span class="o">/</span><span class="n">v</span><span class="o">-</span><span class="n">met</span> <span class="o">-</span><span class="n">profile</span> <span class="o">&lt;</span><span class="n">docker</span><span class="p">,</span><span class="n">podman</span><span class="p">,</span><span class="n">singularity</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">platform</span> <span class="o">&lt;</span><span class="n">illumina</span><span class="p">,</span><span class="n">nanopore</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">kraken2_db</span> <span class="o">&lt;</span><span class="n">kraken2_db</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">blast_db</span> <span class="o">&lt;</span><span class="n">blast_db</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<section id="input-preparation">
+<h2>Input Preparation<a class="headerlink" href="#input-preparation" title="Permalink to this headline"></a></h2>
+<section id="using-a-directory-as-input">
+<h3>Using a Directory as Input<a class="headerlink" href="#using-a-directory-as-input" title="Permalink to this headline"></a></h3>
+<p>If the <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–input</span></a> parameter is not passed, then
+v-met assumes reads files are located in the current directory. You can also
+pass a directory that contains reads files to <code class="docutils literal notranslate"><span class="pre">--input</span></code>. v-met will not look
+in subdirectories of <code class="docutils literal notranslate"><span class="pre">--input</span></code>. When running v-met on a directory, Reads
+files must have one of one of the following extensions:</p>
+<ul class="simple">
+<li><p>.fastq</p></li>
+<li><p>.fq</p></li>
+<li><p>.fastq.gz</p></li>
+<li><p>.fq.gz</p></li>
+</ul>
+<p>There must be only one file per sample for single-end and inteleaved paired-end
+reads, and one pair of files (two files) for regular paired-end reads. Regular
+paired-end files must have either the characters <code class="docutils literal notranslate"><span class="pre">_1</span></code> and <code class="docutils literal notranslate"><span class="pre">_2</span></code> or <code class="docutils literal notranslate"><span class="pre">_R1</span></code>
+and <code class="docutils literal notranslate"><span class="pre">_R2</span></code> in the filename to be identified as a pair. The sample name is taken
+as the all the characters <em>before</em> the first underscore in the file name.</p>
+<p>For example, a folder with the following files</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.
+├── pig-serum_S4_L001_R1_001.fastq.gz
+├── pig-serum_S4_L001_R2_001.fastq.gz
+├── pig-feces_S5_L001_R1_001.fastq.gz
+├── pig-feces_S5_L001_R2_001.fastq.gz
+├── mosquito1_S6_L001_R1_001.fastq.gz
+├── mosquito1_S6_L001_R2_001.fastq.gz
+├── mosquito2_S7_L001_R1_001.fastq.gz
+└── mosquito2_S7_L001_R2_001.fastq.gz
+</pre></div>
+</div>
+<p>will produce a sample list of</p>
+<ul class="simple">
+<li><p>pig-serum</p></li>
+<li><p>pig-feces</p></li>
+<li><p>mosquito1</p></li>
+<li><p>mosquito2</p></li>
+</ul>
+<p>Paired-endedness is determined based on the <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–paired</span></a> flag. By default <code class="docutils literal notranslate"><span class="pre">--paired</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code> when <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–platform</span></a> is <code class="docutils literal notranslate"><span class="pre">illumina</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> for <code class="docutils literal notranslate"><span class="pre">nanopore</span></code>, but this
+can be overridden. To use interleaved paired-end reads, use the
+<a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–interleaved</span></a> flag.</p>
+<p>This file naming system is very common for Illumina output, however for Oxford
+Nanopore reads, the default file structure breaks this in several ways, and it is
+often better to use a samplesheet.</p>
+</section>
+<section id="using-a-samplesheet-as-input">
+<h3>Using a Samplesheet as Input<a class="headerlink" href="#using-a-samplesheet-as-input" title="Permalink to this headline"></a></h3>
+<p>A samplesheet allows you to pass multiple reads files in as
+a single sample, which can be useful for e.g. Oxford Nanopore reads. When using
+a samplesheet, simply pass the path to the sheet to <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–input</span></a>.</p>
+<p>Samplesheets are tab-delimited files. A header is optional, and must be
+delineated by beginning with the pound (<code class="docutils literal notranslate"><span class="pre">#</span></code>) symbol. The first column contains
+sample names, and each subsequent column contains a path to reads files. All
+sample names will be cleaned of any shell metacharacters, and will be truncated
+at the first underscore. Paths are resolved relative to the current directory.
+Path names can contain wildcard characters, and will resolve as glob patterns
+identical to how they would in Nextflow’s <a class="reference external" href="https://nextflow.io/docs/latest/channel.html#channel-path" title="(in Nextflow v22.04)"><span class="xref std std-ref">Channel.fromPath</span></a>
+constructor. For paired-end reads, forward reads should be specified in the
+even-number columns (<code class="docutils literal notranslate"><span class="pre">2,4,6</span></code>), and reverse reads should be specified in the
+odd-number columns (<code class="docutils literal notranslate"><span class="pre">3,5,7</span></code>).</p>
+<section id="single-end-example">
+<h4>Single-end example<a class="headerlink" href="#single-end-example" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 47%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>#samplename</p></th>
+<th class="head"></th>
+<th class="head"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>pig-serum</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/data/run/fastq{pass,fail}/barcode01/FAP01234_{pass,fail}_barcode01_abcde01_*.fastq*</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/data/run2/fastq{pass,fail}/barcode07/FAP01234_{pass,fail}_barcode07_abcde01_*.fastq*</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>pig-feces</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/data/run/fastq{pass,fail}/barcode02/FAP01234_{pass,fail}_barcode02_abcde01_*.fastq*</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>mosquito1</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/data/run/fastq{pass,fail}/barcode03/FAP01234_{pass,fail}_barcode03_abcde01_*.fastq*</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>mosquito2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">./seq-results/mosquito2/*.fastq*`</span></code></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="paired-end-example">
+<h4>Paired-end example<a class="headerlink" href="#paired-end-example" title="Permalink to this headline"></a></h4>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 23%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>#Sample</p></th>
+<th class="head"><p>Forward1</p></th>
+<th class="head"><p>Reverse1</p></th>
+<th class="head"><p>Forward2</p></th>
+<th class="head"><p>Reverse2</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>pig-serum</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/basespace/run/PIG-SERUM*_R1*.fastq.gz</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/basespace/run/PIG-SERUM*_R2*.fastq.gz</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/dragen/run/PIG-SERUM*_R1*.fastq.gz</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/dragen/run/PIG-SERUM*_R2*.fastq.gz</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>pig-feces</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/basespace/run/PIG-FECES*_R1*.fastq.gz</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/basespace/run/PIG-FECES*_R2*.fastq.gz</span></code></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>mosquito1</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/basespace/run/MOSQUITO1*_R1*.fastq.gz</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">/basespace/run/MOSQUITO1*_R1*.fastq.gz</span></code></p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p>mosquito2</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">./seq-results/mosquito2/*_R1*.fastq.gz</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">./seq-results/mosquito2/*_R2*.fastq.gz</span></code></p></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Once the samplesheet is constructed, pass it on the command line as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nextflow</span> <span class="n">run</span> <span class="n">ksumngs</span><span class="o">/</span><span class="n">v</span><span class="o">-</span><span class="n">met</span> <span class="o">--</span><span class="nb">input</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">sheet</span><span class="o">.</span><span class="n">tsv</span> <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="profile-selection">
+<h2>Profile Selection<a class="headerlink" href="#profile-selection" title="Permalink to this headline"></a></h2>
+<p>Profiles allow for unique combinations of settings within a Nextflow pipeline.
+For the purposes of v-met, they reconfigure the pipeline to run on a particular
+container engine. Whichever engine you choose must be installed and available
+(e.g. <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span></code>) on each node that pipeline processes are running on. The
+available options are</p>
+<dl>
+<dt>(none)</dt><dd><p>Don’t use a container engine. Requires that every tool and the right version
+of every tool be installed on each machine the pipeline is running on. Don’t
+use this one.</p>
+</dd>
+<dt>docker</dt><dd><p>Use <a class="reference external" href="https://docker.com">Docker</a> as the container engine. Note that Docker
+often requires root or nearly-root permissions that usually aren’t available
+on HPCs, and has a weird license that might forbid its use in commercial
+settings. Works well on local machines, though.</p>
+</dd>
+<dt>podman</dt><dd><p>Use <a class="reference external" href="https://podman.io">Podman</a> instead of Docker. Podman is similar enough
+to Docker that they can often be used interchangably, but doesn’t require root
+permissions and has a free license. Some files might not be accessible via
+container on RHEL-based distros thanks to their particular SELinux
+implementation.</p>
+</dd>
+<dt>singularity</dt><dd><p><strong>Recommended</strong></p>
+<p>Use the <a class="reference external" href="https://apptainer.org/user-docs/master/index.html" title="(in Singularity User Guide v3.8)"><span class="xref std std-doc">Singularity</span></a> container engine. This engine
+was built with HPC use in mind, and doesn’t require any special permissions to
+run. Singularity’s downfall is how it will expose your home directory to the
+container, resulting in rare, but difficult to explain bugs when files
+conflict. Every effort has been made to minimize the effects of Singularity’s
+file mounting in this pipeline.</p>
+</dd>
+<dt>INSTITUTE</dt><dd><p>If your computing center is listed in <a class="reference external" href="https://github.com/nf-core/configs/">nf-core configs</a> then you can pass that name to
+<code class="docutils literal notranslate"><span class="pre">-profile</span></code> to have the container engine and resource limits configured
+automatically.</p>
+</dd>
+<dt>test</dt><dd><p>Download a test dataset from nf-core and run a sample to ensure your machine
+configuration is correct. Must be used with one of the container engine
+profiles.</p>
+</dd>
+<dt>test_nanopore</dt><dd><p>Download a MinION test dataset and run just like <code class="docutils literal notranslate"><span class="pre">test</span></code>.</p>
+</dd>
+<dt>gh</dt><dd><p>Used to limit resource usage during continuous integration on GitHub Actions.
+You should never have to use these for real-life analysis.</p>
+</dd>
+</dl>
+<p>To select a profile, you must pass the desired profile name to Nextflow’s
+<code class="docutils literal notranslate"><span class="pre">-profile</span></code> flag. Note that this is a Nextflow flag, and not a pipeline flag,
+so it is a single dash (<code class="docutils literal notranslate"><span class="pre">-profile</span></code>), not a double dash (<code class="docutils literal notranslate"><span class="pre">--profile</span></code>).</p>
+</section>
+<section id="mandatory-parameters">
+<h2>Mandatory Parameters<a class="headerlink" href="#mandatory-parameters" title="Permalink to this headline"></a></h2>
+<p>See <a class="reference internal" href="parameters.html"><span class="doc">the page on parameters</span></a> for the complete lowdown on
+parameters.</p>
+<p>The pipeline is pretty much set up to run itself. So long as you have your input
+reads formatted correctly, it doesn’t need much input from you. These are the
+bare minimum parameters that you must provide on the command-line for the
+pipeline to complete. Note that there has been mixed success with placing these
+parameters in a <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> file, so keeping them on the command-line is
+best.</p>
+<dl class="option-list">
+<dt><kbd><span class="option">--kraken2_db</span></kbd></dt>
+<dd><p>The path to a Kraken2 database. See <a class="reference internal" href="parameters.html#kraken2-options"><span class="std std-ref">–kraken2_db</span></a>.</p>
+</dd>
+<dt><kbd><span class="option">--platform</span></kbd></dt>
+<dd><p>Must be set to <code class="docutils literal notranslate"><span class="pre">illumina</span></code> or <code class="docutils literal notranslate"><span class="pre">nanopore</span></code>, depending on the type of reads
+you are analyzing. See <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–platform</span></a>.</p>
+</dd>
+<dt><kbd><span class="option">--blast_db</span></kbd></dt>
+<dd><p>The path to an NCBI nt BLAST database. See <a class="reference internal" href="parameters.html#blast-options"><span class="std std-ref">–blast_db</span></a>.</p>
+</dd>
+<dt><kbd><span class="option">-p<var>rofile</var></span></kbd></dt>
+<dd><p>So, this isn’t really a parameter, but the container engine needs to be set
+using Nextflow’s <code class="docutils literal notranslate"><span class="pre">-profile</span></code> flag. See <a class="reference internal" href="#profile-selection"><span class="std std-ref">Profile Selection</span></a>.</p>
+</dd>
+</dl>
+</section>
+<section id="setting-up-for-hpc-job-schedulers">
+<h2>Setting up for HPC Job Schedulers<a class="headerlink" href="#setting-up-for-hpc-job-schedulers" title="Permalink to this headline"></a></h2>
+<p>v-met comes preconfigured for local use only. Yes, that’s about as ridiculous as
+it sounds. What’s even more ridiculous is trying to make a configuration that
+can easily be adapted to multiple HPCs and job-scheduler frameworks. There is a
+compromise, however.</p>
+<section id="process-labels">
+<h3>Process Labels<a class="headerlink" href="#process-labels" title="Permalink to this headline"></a></h3>
+<p>Rather than provide hard-coded configurations that will certainly
+break, there are several Nextflow ‘labels,’ that can be used for assigning
+processes to specific node queues or partitions. The labels are</p>
+<dl class="simple">
+<dt>process_low</dt><dd><p>For processes with low resource usage that take a short time</p>
+</dd>
+<dt>process_medium</dt><dd><p>For processes with moderate resource usage that take a moderate amount of time</p>
+</dd>
+<dt>process_high</dt><dd><p>For processes with high resource usage that take a moderately high amount of
+time</p>
+</dd>
+<dt>process_long</dt><dd><p>For processes that take a long time</p>
+</dd>
+<dt>process_high_memory</dt><dd><p>For processes that use a lot of memory</p>
+</dd>
+<dt>run_local</dt><dd><p>For processes that have to be run on the login node. This label was created
+specially for processes that download resources from the internet on HPCs
+where compute nodes do not have internet access</p>
+</dd>
+</dl>
+<p>Using a custom <code class="docutils literal notranslate"><span class="pre">nextflow.config</span></code> and these process labels, you can construct a
+setup for your own HPC needs.</p>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h3>
+<p>As an example, here is a guide on how to set up a configuration for the
+<a class="reference external" href="https://scinet.usda.gov/guide/ceres/">USDA’s SCINet Ceres cluster</a>, using the
+publically available info on their website.</p>
+<p>First, we see that Ceres uses SLURM and Singularity. Excellent.
+Let’s set Nextflow up to use SLURM:</p>
+<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span><span class="w"></span>
+<span class="o">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Some SLURM systems require an account to be passed with every job submission.
+Let’s add ours just to be safe.</p>
+<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">executor</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;--account=ksumngs&#39;</span><span class="w"></span>
+<span class="o">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>For this example, I don’t think we’ll need to do anything special with the low,
+medium, and high processes, but let’s make sure that the long and high memory
+processes get submitted to partitions that can handle them.</p>
+<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">executor</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;--account=ksumngs&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="n">module</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="nl">withLabel:</span><span class="w"> </span><span class="n">process_long</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">queue</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;long&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="o">}</span><span class="w"></span>
+<span class="w">    </span><span class="nl">withLabel:</span><span class="w"> </span><span class="n">process_high_memory</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">queue</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;mem&#39;</span><span class="w"></span>
+<span class="w">    </span><span class="o">}</span><span class="w"></span>
+<span class="o">}</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Now, we can place this file in <code class="docutils literal notranslate"><span class="pre">$HOME/.nextflow/nextflow.config</span></code>, and these
+settings will be applied every time we run the pipeline.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="install.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="parameters.html" class="btn btn-neutral float-right" title="Complete Parameter Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, K-State Molecular NGS Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v1.0.1
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="usage.html">v1.0.1</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

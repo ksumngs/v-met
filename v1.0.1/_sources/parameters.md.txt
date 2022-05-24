@@ -1,0 +1,83 @@
+<!-- markdownlint-disable -->
+# Complete Parameter Reference
+
+Every single parameter in the entire pipeline is described here. If you need to tweak every little detail of how your samples are analyzed, you've come to the right place! Note that *every* parameter is described here, even those that shouldn't be used, so proceed with caution!
+
+## Input/output options
+
+Define where the pipeline should find input data and save output data.
+
+| Parameter | Description | Type | Required | Default |
+|-----------|-----------|-----------|-----------|-----------|
+| `input` | Path the folder containing input reads. <details><summary>Help</summary><small>For Illumina (paired-end) reads, the file names must be identical until the ending underscore with a read number, e.g. 'sample1_S10_L001_R1_001.fastq.gz' and 'sample1_S10_L001_R2_001.fastq.gz'. The read number must be designated using either '_1' and '_2' or '_R1' and '_R2'. For Nanopore reads, each fastq file is assumed to be a unique sample, so, e.g. 'FAP01234_pass_barcode05_abcd01234_0.fastq.gz' and 'FAP01234_pass_barcode05_abcd01234_1.fastq.gz' are assumed to be different samples even though they are from the same barcode. All read files must be gzipped, and have the extension '.fastq.gz' or '.fq.gz'.</small></details>| `string` |  | . |
+| `platform` | NGS platform used to sequence the samples | `string` |  |  |
+| `paired` | Flag to indicate whether the reads files are paired-end or not | `boolean` |  |  |
+| `interleaved` | Whether paired-end reads interleaved into a single fastq file | `boolean` |  |  |
+| `outdir` | Path to the output directory where the results will be saved. | `string` |  | ./results |
+| `publish_dir_mode` | How to create results files | `string` |  | copy |
+| `tracedir` | Directory to keep pipeline Nextflow logs and reports. | `string` |  | ${params.outdir}/pipeline_info |
+| `help` | Display help text. | `boolean` |  |  |
+| `show_hidden_params` | Show all params when using `--help` | `boolean` |  |  |
+| `custom_config_version` | Git commit id for Institutional configs. | `string` |  | master |
+| `custom_config_base` | Base directory for Institutional configs. | `string` |  | https://raw.githubusercontent.com/nf-core/configs/master |
+
+## Kraken2 Options
+
+Control how Kraken2 filters out host reads
+
+| Parameter | Description | Type | Required | Default |
+|-----------|-----------|-----------|-----------|-----------|
+| `kraken2_db` | Path to a Kraken2 database <details><summary>Help</summary><small>The path to a [Kraken2 database](https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases) that will be used to filter out host reads in the pipeline. This path will be automatically mounted into the container environments if a containerized profile is used.  Corresponds to the [--db](https://github.com/DerrickWood/kraken2/wiki/Manual#classification) option of Kraken2.</small></details>| `string` |  | None |
+
+## BLAST options
+
+Control what reads BLAST examines
+
+| Parameter | Description | Type | Required | Default |
+|-----------|-----------|-----------|-----------|-----------|
+| `blast_db` | Path to a folder containing a BLAST nt database | `string` |  | None |
+| `blast_target` | Taxonomic IDs to keep and analyze <details><summary>Help</summary><small>A space-separated list (use quotes on the command line), of the taxonomic ids to keep based on Kraken2's classification.  Defaults to keeping all unclassified reads and all viral reads. Note that this requires the host to be present in the Kraken2 database. When dealing with animals and the databases available from `kraken2-build`, this is not the case, and this parameter should be modified.</small></details>| `string` |  | 0 10239 |
+
+## Read trimming options
+
+Options for how strictly to quality control NGS reads
+
+| Parameter | Description | Type | Required | Default |
+|-----------|-----------|-----------|-----------|-----------|
+| `trim_minlen` | Minimum length of reads <details><summary>Help</summary><small>Corresponds to the [MINLEN](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic for Illumina reads.  Corresponds to the [--length](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt for Nanopore reads.</small></details>| `integer` |  | 100 |
+| `trim_maxlen` | Maximum length of reads <details><summary>Help</summary><small>Only applies to Nanopore reads.  Corresponds to the [--maxlength](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt.</small></details>| `integer` |  | 0 |
+| `trim_adapters` | Sequences to be removed during trimming <details><summary>Help</summary><small>Only applies to Illumina reads. Corresponds to the first [ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic. If left blank (i.e. `--trim_adapters ''`), then adapter trimming is disabled. Custom adapters cannot be used, and the parameter corresponds to one of the prebuilt sequence files provided with Trimmomatic. </small></details>| `string` |  | NexteraPE-PE.fa |
+| `trim_mismatches` | Max number of base mismatches to allow an adapter match <details><summary>Help</summary><small>Only applies to Illumina reads. Corresponds to the second [ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.</small></details>| `integer` |  | 2 |
+| `trim_pclip` | How accurate the match between adapter ligated reads must be for paired-end palindrome read alignment <details><summary>Help</summary><small>Only applies to Illumina reads. Corresponds to the third [ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.</small></details>| `integer` |  | 30 |
+| `trim_clip` | How accurate the match between any adapter must be against a read <details><summary>Help</summary><small>Only applies to Illumina reads. Corresponds to the final [ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.</small></details>| `integer` |  | 10 |
+| `trim_winsize` | Number of bases to average quality across <details><summary>Help</summary><small>Only applies to Illumina reads. If set to `0`, then sliding window trimming is disabled. Corresponds to the first [SLIDINGWINDOW](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.</small></details>| `integer` |  | 50 |
+| `trim_winqual` | Required average window base quality <details><summary>Help</summary><small>Only applies to Illumina reads. If set to `0`, then sliding window trimming is disabled. Corresponds to the second [SLIDINGWINDOW](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.</small></details>| `integer` |  | 15 |
+| `trim_leading` | Minimum quality of bases in leading end of read <details><summary>Help</summary><small>Only applies to Illumina reads. If set to `0`, LEADING trimming is disabled. Corresponds to the [LEADING](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.</small></details>| `integer` |  | 15 |
+| `trim_trailing` | Minimum quality of bases in trailing end of read <details><summary>Help</summary><small>Only applies to Illumina reads. If set to `0`, TRAILING trimming is disabled. Corresponds to the [TRAILING](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.</small></details>| `integer` |  | 15 |
+| `trim_headcrop` | Number of bases to remove from start of read <details><summary>Help</summary><small>Corresponds to the [HEADCROP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic for Illumina reads. If set to `0`, then HEADCROP trimming is disabled.  Corresponds to the [--headcrop](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt for Nanopore reads.</small></details>| `integer` |  | 0 |
+| `trim_crop` | Number of bases to keep from start of read <details><summary>Help</summary><small>Only applies to Illumina reads. If set to `0`, CROP trimming is disabled. Corresponds to the [CROP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.</small></details>| `integer` |  | 0 |
+| `trim_meanqual` | Minimum average base quality of entire reads <details><summary>Help</summary><small>Applies only to ONT reads. Corresponds to the [--quality](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt.</small></details>| `integer` |  | 7 |
+| `trim_mingc` | Minimum GC count of reads <details><summary>Help</summary><small>Only applies to ONT reads. Corresponds to the [--minGC](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt.</small></details>| `integer` |  | 0 |
+| `trim_maxgc` | Maximum GC count of reads <details><summary>Help</summary><small>Only applies to ONT reads. Corresponds to the [--maxGC](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt.</small></details>| `integer` |  | 0 |
+| `trim_tailcrop` | Number of bases to remove from the end of each read <details><summary>Help</summary><small>Only applies to ONT reads. Corresponds to the [--tailcrop](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt.</small></details>| `integer` |  | 0 |
+
+## Workflow options
+
+Options to skip portions of the workflow
+
+| Parameter | Description | Type | Required | Default |
+|-----------|-----------|-----------|-----------|-----------|
+| `skip_trimming` | Skip read trimming (Trimmomatic/Nanofilt) | `boolean` |  |  |
+| `skip_qc` | Skip FastQC | `boolean` |  |  |
+| `skip_blast` | Skip BLASTing any reads | `boolean` |  |  |
+
+## Max job request options
+
+Set the top limit for requested resources for any single job.
+
+| Parameter | Description | Type | Required | Default |
+|-----------|-----------|-----------|-----------|-----------|
+| `max_cpus` | Maximum number of CPUs that can be requested for any single job. <details><summary>Help</summary><small>Use to set an upper-limit for the CPU requirement for each process. Should be an integer e.g. `--max_cpus 1`</small></details>| `integer` |  | 16 |
+| `max_memory` | Maximum amount of memory that can be requested for any single job. <details><summary>Help</summary><small>Use to set an upper-limit for the memory requirement for each process. Should be a string in the format integer-unit e.g. `--max_memory '8.GB'`</small></details>| `string` |  | 128.GB |
+| `max_time` | Maximum amount of time that can be requested for any single job. <details><summary>Help</summary><small>Use to set an upper-limit for the time requirement for each process. Should be a string in the format integer-unit e.g. `--max_time '2.h'`</small></details>| `string` |  | 240.h |
+| `enable_conda` | Run this workflow with Conda. You can also use '-profile conda' instead of providing this parameter. | `boolean` |  |  |
