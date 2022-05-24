@@ -24,7 +24,7 @@ jobs:
         run: ./paramdocgen
       - name: Build docs 📝
         run: |
-          sphinx-build -b html docs docs/_build
+          sphinx-multiversion -b html docs docs/_build
       - name: Collect 🧺
         uses: actions/upload-artifact@v2
         with:
