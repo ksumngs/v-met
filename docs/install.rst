@@ -101,7 +101,7 @@ NCBI nt BLAST Database
 """"""""""""""""""""""
 
 Downloading the BLAST database is technically optional, as its use can be
-bypassed by passing ``none`` to :ref:`--blast_target` parameter.
+bypassed by passing ``none`` to :ref:`--blast_target <blast options>` parameter.
 
 To download the database, use NCBI's
 `update_blastdb.pl <https://www.ncbi.nlm.nih.gov/books/NBK569850>`_ script, like
