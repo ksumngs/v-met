@@ -1,6 +1,8 @@
 repository_type: pipeline
 lint:
   files_exist:
+    # I still use markdownlint for my editor
+    - .markdownlint.yml
     # We have markdown templates instead of yaml
     - .github/ISSUE_TEMPLATE/bug_report.yml
     - .github/ISSUE_TEMPLATE/feature_request.yml

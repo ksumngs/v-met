@@ -1,0 +1,5 @@
+default: true
+no-duplicate-header:
+  siblings_only: true
+line-length:
+  line_length: 120

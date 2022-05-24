@@ -1,1 +1,27 @@
-.gitignore
+#### Visual Studio Code gitignore ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+### Nextflow gitignore ###
+.nextflow*
+work/
+data/
+results/
+.trace/
+.DS_Store
+testing/
+testing*
+*.pyc
+
+### Sphinx gitignore ###
+docs/_build
+
+### nf-core modules ###
+modules/*
