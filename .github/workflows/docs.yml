@@ -11,22 +11,17 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Install Python 🐍
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+          cache: "pip"
       - name: Install Sphinx 🇪🇬
         uses: logikal-code/pip-install@v1.0.0
         with:
           requirements: docs/requirements.txt
-      - name: Install nf-core Tools 🍎
-        run: |
-          python -m pip install git+https://github.com/krokicki/tools@dev
       - name: Convert schema to docs 🧑‍⚖️
-        run: |
-          echo "# Complete Parameter Reference" > docs/parameters.md
-          echo "" >> docs/parameters.md
-          echo "Every single parameter in the entire pipeline is described here. If you need to" >> docs/parameters.md
-          echo "tweak every little detail of how your samples are analyzed, you've come to" >> docs/parameters.md
-          echo "the right place! Note that *every* parameter is described here, even those that" >> docs/parameters.md
-          echo "shouldn't be used, so proceed with caution!" >> docs/parameters.md
-          nf-core schema docs nextflow_schema.json | tail -n+4 >> docs/parameters.md
+        run: ./paramdocgen
       - name: Build docs 📝
         run: |
           sphinx-build -b html docs docs/_build
