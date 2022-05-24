@@ -25,3 +25,6 @@ docs/_build
 
 ### nf-core modules ###
 modules/*
+
+### Auto-generated documentation ###
+docs/parameters.md
