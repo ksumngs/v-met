@@ -6,10 +6,7 @@ labels: ["enhancement"]
 ---
 
 > _Thanks for adding fresh ideas to v-met!_ :smile:
-> _This template is rather extensive._
-> _Please fill out all that you can, but remember that this template_
-> _is only a tool: if you feel that anything is not relevant, simply_
-> _leave it blank._
+> _This template is rather extensive._ > _Please fill out all that you can, but remember that this template_ > _is only a tool: if you feel that anything is not relevant, simply_ > _leave it blank._
 
 ## Summary
 
@@ -59,5 +56,5 @@ labels: ["enhancement"]
 > here. Even better, if you know a way to implement it, but don't want to open a
 > pull request, explain that here._
 
-[DockerHub]: https://hub.docker.com
-[Quay]: https://quay.io
+[dockerhub]: https://hub.docker.com
+[quay]: https://quay.io

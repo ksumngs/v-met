@@ -72,15 +72,15 @@ nextflow run ksumngs/yavsap             \
 There are _way_ more parameters than listed here. For a more complete
 description, please read the docs on [Usage] and [Parameters].
 
-[BLAST database]: https://www.ncbi.nlm.nih.gov/books/NBK569850/
-[Docker]: https://docs.docker.com/engine/installation
+[blast database]: https://www.ncbi.nlm.nih.gov/books/NBK569850/
+[docker]: https://docs.docker.com/engine/installation
 [git-flow]: https://nvie.com/posts/a-successful-git-branching-model
-[Installation]: https://ksumngs.github.io/v-met/install
-[Kraken 2]: https://github.com/DerrickWood/kraken2
-[Kraken2 database]: https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases
-[Nextflow]: https://nextflow.io
-[Parameters]: https://ksumngs.github.io/v-met/parameters
-[Podman]: https://podman.io
+[installation]: https://ksumngs.github.io/v-met/install
+[kraken 2]: https://github.com/DerrickWood/kraken2
+[kraken2 database]: https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases
+[nextflow]: https://nextflow.io
+[parameters]: https://ksumngs.github.io/v-met/parameters
+[podman]: https://podman.io
 [semver]: https://semver.org
-[Singularity]: https://www.sylabs.io/guides/3.8/user-guide
-[Usage]: https://ksumngs.github.io/v-met/usage
+[singularity]: https://www.sylabs.io/guides/3.8/user-guide
+[usage]: https://ksumngs.github.io/v-met/usage

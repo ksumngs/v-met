@@ -21,8 +21,8 @@ follows:
 1. Check that there isn't already an issue about your idea in the
    [ksumngs/v-met issues](https://github.com/ksumngs/v-met/issues) to avoid
    duplicating work
-    - If there isn't one already, please create one so that others know you're
-      working on this
+   - If there isn't one already, please create one so that others know you're
+     working on this
 2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo)
    the [ksumngs/v-met repository](https://github.com/ksumngs/v-met) to
    your GitHub account
@@ -69,8 +69,7 @@ more documentation.
 ### Pipeline tests
 
 We use the test dataset over at
-<https://github.com/ksumngs/nf-test-datasets/tree/v-met> for testing. `GitHub
-Actions` then runs the pipeline on this data to ensure that it exits
+<https://github.com/ksumngs/nf-test-datasets/tree/v-met> for testing. `GitHub Actions` then runs the pipeline on this data to ensure that it exits
 successfully. If there are any failures then the automated tests fail. These
 tests are run both with the latest available version of `Nextflow` and also the
 minimum required version that is stated in the pipeline code.
@@ -151,12 +150,10 @@ guidelines](https://gist.github.com/MillironX/bd9606623b3ccfdfb72d77e2bd3dc213#n
 > - Use `snake_case_underscore_separators` for parameter and process label
 >   names, and input and output variable names
 
-
 ### Nextflow version bumping
 
 If you are using a new feature from core Nextflow, you may bump the minimum
-required version of nextflow in the pipeline with: `nf-core bump-version
---nextflow . [min-nf-version]`
+required version of nextflow in the pipeline with: `nf-core bump-version --nextflow . [min-nf-version]`
 
 ### Images and figures
 
