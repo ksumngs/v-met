@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # Complete Parameter Reference
 
 Every single parameter in the entire pipeline is described here. If you need to tweak every little detail of how your samples are analyzed, you've come to the right place! Note that *every* parameter is described here, even those that shouldn't be used, so proceed with caution!
