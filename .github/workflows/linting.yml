@@ -8,19 +8,6 @@ on:
     types: [published]
 
 jobs:
-  EditorConfig:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
-
-      - name: Install editorconfig-checker
-        run: npm install -g editorconfig-checker
-
-      - name: Run ECLint check
-        run: editorconfig-checker -exclude README.md $(git ls-files | grep -v test)
-
   Prettier:
     runs-on: ubuntu-latest
     steps:
