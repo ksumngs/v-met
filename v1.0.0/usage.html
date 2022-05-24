@@ -18,7 +18,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Complete Parameter Reference" href="parameters.html" />
+    <link rel="next" title="&lt;no title&gt;" href="parameters.html" />
     <link rel="prev" title="Installation" href="install.html" /> 
 </head>
 
@@ -59,7 +59,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="parameters.html">Complete Parameter Reference</a></li>
 </ul>
 
         </div>
@@ -96,7 +95,7 @@
 <h2>Input Preparation<a class="headerlink" href="#input-preparation" title="Permalink to this headline"></a></h2>
 <section id="using-a-directory-as-input">
 <h3>Using a Directory as Input<a class="headerlink" href="#using-a-directory-as-input" title="Permalink to this headline"></a></h3>
-<p>If the <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–input</span></a> parameter is not passed, then
+<p>If the <span class="xref std std-ref">–input</span> parameter is not passed, then
 v-met assumes reads files are located in the current directory. You can also
 pass a directory that contains reads files to <code class="docutils literal notranslate"><span class="pre">--input</span></code>. v-met will not look
 in subdirectories of <code class="docutils literal notranslate"><span class="pre">--input</span></code>. When running v-met on a directory, Reads
@@ -131,9 +130,9 @@ as the all the characters <em>before</em> the first underscore in the file name.
 <li><p>mosquito1</p></li>
 <li><p>mosquito2</p></li>
 </ul>
-<p>Paired-endedness is determined based on the <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–paired</span></a> flag. By default <code class="docutils literal notranslate"><span class="pre">--paired</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code> when <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–platform</span></a> is <code class="docutils literal notranslate"><span class="pre">illumina</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> for <code class="docutils literal notranslate"><span class="pre">nanopore</span></code>, but this
+<p>Paired-endedness is determined based on the <span class="xref std std-ref">–paired</span> flag. By default <code class="docutils literal notranslate"><span class="pre">--paired</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code> when <span class="xref std std-ref">–platform</span> is <code class="docutils literal notranslate"><span class="pre">illumina</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code> for <code class="docutils literal notranslate"><span class="pre">nanopore</span></code>, but this
 can be overridden. To use interleaved paired-end reads, use the
-<a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–interleaved</span></a> flag.</p>
+<span class="xref std std-ref">–interleaved</span> flag.</p>
 <p>This file naming system is very common for Illumina output, however for Oxford
 Nanopore reads, the default file structure breaks this in several ways, and it is
 often better to use a samplesheet.</p>
@@ -142,7 +141,7 @@ often better to use a samplesheet.</p>
 <h3>Using a Samplesheet as Input<a class="headerlink" href="#using-a-samplesheet-as-input" title="Permalink to this headline"></a></h3>
 <p>A samplesheet allows you to pass multiple reads files in as
 a single sample, which can be useful for e.g. Oxford Nanopore reads. When using
-a samplesheet, simply pass the path to the sheet to <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–input</span></a>.</p>
+a samplesheet, simply pass the path to the sheet to <span class="xref std std-ref">–input</span>.</p>
 <p>Samplesheets are tab-delimited files. A header is optional, and must be
 delineated by beginning with the pound (<code class="docutils literal notranslate"><span class="pre">#</span></code>) symbol. The first column contains
 sample names, and each subsequent column contains a path to reads files. All
@@ -300,14 +299,14 @@ parameters in a <code class="docutils literal notranslate"><span class="pre">nex
 best.</p>
 <dl class="option-list">
 <dt><kbd><span class="option">--kraken2_db</span></kbd></dt>
-<dd><p>The path to a Kraken2 database. See <a class="reference internal" href="parameters.html#kraken2-options"><span class="std std-ref">–kraken2_db</span></a>.</p>
+<dd><p>The path to a Kraken2 database. See <span class="xref std std-ref">–kraken2_db</span>.</p>
 </dd>
 <dt><kbd><span class="option">--platform</span></kbd></dt>
 <dd><p>Must be set to <code class="docutils literal notranslate"><span class="pre">illumina</span></code> or <code class="docutils literal notranslate"><span class="pre">nanopore</span></code>, depending on the type of reads
-you are analyzing. See <a class="reference internal" href="parameters.html#input-output-options"><span class="std std-ref">–platform</span></a>.</p>
+you are analyzing. See <span class="xref std std-ref">–platform</span>.</p>
 </dd>
 <dt><kbd><span class="option">--blast_db</span></kbd></dt>
-<dd><p>The path to an NCBI nt BLAST database. See <a class="reference internal" href="parameters.html#blast-options"><span class="std std-ref">–blast_db</span></a>.</p>
+<dd><p>The path to an NCBI nt BLAST database. See <span class="xref std std-ref">–blast_db</span>.</p>
 </dd>
 <dt><kbd><span class="option">-p<var>rofile</var></span></kbd></dt>
 <dd><p>So, this isn’t really a parameter, but the container engine needs to be set
@@ -393,7 +392,7 @@ settings will be applied every time we run the pipeline.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="install.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="parameters.html" class="btn btn-neutral float-right" title="Complete Parameter Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="parameters.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
@@ -416,14 +415,14 @@ settings will be applied every time we run the pipeline.</p>
 <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
   <span class="rst-current-version" data-toggle="rst-current-version">
     <span class="fa fa-book"> Other Versions</span>
-    v: v1.0.1
+    v: v1.0.0
     <span class="fa fa-caret-down"></span>
   </span>
   <div class="rst-other-versions">
     <dl>
       <dt>Tags</dt>
-      <dd><a href="../v1.0.0/usage.html">v1.0.0</a></dd>
-      <dd><a href="usage.html">v1.0.1</a></dd>
+      <dd><a href="usage.html">v1.0.0</a></dd>
+      <dd><a href="../v1.0.1/usage.html">v1.0.1</a></dd>
     </dl>
   </div>
 </div><script>
