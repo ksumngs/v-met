@@ -8,9 +8,13 @@ Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Documentation improvements
+
 ## [1.0.0] - 2022-03-07
 
 Initial release
 
-[Unreleased]: https://github.com/ksumngs/v-met/compare/v1.0.0...HEAD
+[unreleased]: https://github.com/ksumngs/v-met/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/ksumngs/v-met/releases/tag/v1.0.0

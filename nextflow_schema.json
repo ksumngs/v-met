@@ -23,10 +23,7 @@
                     "type": "string",
                     "fa_icon": "fas fa-tram",
                     "description": "NGS platform used to sequence the samples",
-                    "enum": [
-                        "illumina",
-                        "nanopore"
-                    ]
+                    "enum": ["illumina", "nanopore"]
                 },
                 "paired": {
                     "type": "boolean",
@@ -50,14 +47,7 @@
                     "default": "copy",
                     "fa_icon": "fab fa-leanpub",
                     "description": "How to create results files",
-                    "enum": [
-                        "symlink",
-                        "relink",
-                        "link",
-                        "copy",
-                        "copyNoFollow",
-                        "move"
-                    ],
+                    "enum": ["symlink", "relink", "link", "copy", "copyNoFollow", "move"],
                     "hidden": true
                 },
                 "tracedir": {
@@ -92,9 +82,7 @@
                     "fa_icon": "fas fa-globe"
                 }
             },
-            "required": [
-                "platform"
-            ]
+            "required": ["platform"]
         },
         "kraken2_options": {
             "title": "Kraken2 Options",
@@ -105,14 +93,12 @@
                 "kraken2_db": {
                     "type": "string",
                     "description": "Path to a Kraken2 database",
-                    "help_text": "The path to a [Kraken2 database](https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases) that will be used to filter out host reads in the pipeline. This path will be automatically mounted into the container environments if a containerized profile is used.\n\nCorresponds to the [--db](https://github.com/DerrickWood/kraken2/wiki/Manual#classification) option of Kraken2.",
+                    "help_text": "The path to a [Kraken2 database](https://github.com/DerrickWood/kraken2/wiki/Manual#custom-databases) that will be used to filter out host reads in the pipeline. This path will be automatically mounted into the container environments if a containerized profile is used.  Corresponds to the [--db](https://github.com/DerrickWood/kraken2/wiki/Manual#classification) option of Kraken2.",
                     "fa_icon": "fas fa-database",
                     "default": "None"
                 }
             },
-            "required": [
-                "kraken2_db"
-            ],
+            "required": ["kraken2_db"],
             "fa_icon": "fab fa-gitkraken"
         },
         "blast_options": {
@@ -132,12 +118,10 @@
                     "default": "0 10239",
                     "fa_icon": "fas fa-bullseye",
                     "description": "Taxonomic IDs to keep and analyze",
-                    "help_text": "A space-separated list (use quotes on the command line), of the taxonomic ids to keep based on Kraken2's classification.\n\nDefaults to keeping all unclassified reads and all viral reads. Note that this requires the host to be present in the Kraken2 database. When dealing with animals and the databases available from `kraken2-build`, this is not the case, and this parameter should be modified."
+                    "help_text": "A space-separated list (use quotes on the command line), of the taxonomic ids to keep based on Kraken2's classification.  Defaults to keeping all unclassified reads and all viral reads. Note that this requires the host to be present in the Kraken2 database. When dealing with animals and the databases available from `kraken2-build`, this is not the case, and this parameter should be modified."
                 }
             },
-            "required": [
-                "blast_db"
-            ]
+            "required": ["blast_db"]
         },
         "read_trimming_options": {
             "title": "Read trimming options",
@@ -151,40 +135,35 @@
                     "default": 100,
                     "fa_icon": "fas fa-ruler-horizontal",
                     "description": "Minimum length of reads",
-                    "help_text": "Corresponds to the [MINLEN](http://www.usadellab.org/cms/?page=trimmomatic)\noption of Trimmomatic for Illumina reads.\n\nCorresponds to the [--length](https://github.com/wdecoster/nanofilt/#usage)\noption of NanoFilt for Nanopore reads."
+                    "help_text": "Corresponds to the [MINLEN](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic for Illumina reads.  Corresponds to the [--length](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt for Nanopore reads."
                 },
                 "trim_maxlen": {
                     "type": "integer",
                     "default": 0,
                     "fa_icon": "fas fa-ruler-vertical",
                     "description": "Maximum length of reads",
-                    "help_text": "Only applies to Nanopore reads.\n\nCorresponds to the [--maxlength](https://github.com/wdecoster/nanofilt/#usage) option of\nNanoFilt."
+                    "help_text": "Only applies to Nanopore reads.  Corresponds to the [--maxlength](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
                 },
                 "trim_adapters": {
                     "type": "string",
                     "default": "NexteraPE-PE.fa",
                     "fa_icon": "fas fa-align-right",
                     "description": "Sequences to be removed during trimming",
-                    "help_text": "Only applies to Illumina reads. Corresponds to the first\n[ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic. If left blank (i.e. `--trim_adapters ''`), then adapter trimming is\ndisabled. Custom adapters cannot be used, and the parameter corresponds to\none of the prebuilt sequence files provided with Trimmomatic.\n",
-                    "enum": [
-                        "NexteraPE-PE.fa",
-                        "TruSeq2-PE.fa",
-                        "TruSeq3-PE-2.fa",
-                        "TruSeq3-PE.fa"
-                    ]
+                    "help_text": "Only applies to Illumina reads. Corresponds to the first [ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic. If left blank (i.e. `--trim_adapters ''`), then adapter trimming is disabled. Custom adapters cannot be used, and the parameter corresponds to one of the prebuilt sequence files provided with Trimmomatic. ",
+                    "enum": ["NexteraPE-PE.fa", "TruSeq2-PE.fa", "TruSeq3-PE-2.fa", "TruSeq3-PE.fa"]
                 },
                 "trim_mismatches": {
                     "type": "integer",
                     "default": 2,
                     "description": "Max number of base mismatches to allow an adapter match",
-                    "help_text": "Only applies to Illumina reads. Corresponds to the second\n[ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic.",
+                    "help_text": "Only applies to Illumina reads. Corresponds to the second [ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.",
                     "fa_icon": "fab fa-buromobelexperte"
                 },
                 "trim_pclip": {
                     "type": "integer",
                     "default": 30,
                     "description": "How accurate the match between adapter ligated reads must be for paired-end palindrome read alignment",
-                    "help_text": "Only applies to Illumina reads. Corresponds to the third\n[ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic.",
+                    "help_text": "Only applies to Illumina reads. Corresponds to the third [ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.",
                     "fa_icon": "fas fa-clipboard"
                 },
                 "trim_clip": {
@@ -192,48 +171,48 @@
                     "default": 10,
                     "fa_icon": "far fa-clipboard",
                     "description": "How accurate the match between any adapter must be against a read",
-                    "help_text": "Only applies to Illumina reads. Corresponds to the final\n[ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                    "help_text": "Only applies to Illumina reads. Corresponds to the final [ILLUMINACLIP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic."
                 },
                 "trim_winsize": {
                     "type": "integer",
                     "default": 50,
                     "fa_icon": "fab fa-windows",
                     "description": "Number of bases to average quality across",
-                    "help_text": "Only applies to Illumina reads. If set to `0`, then sliding window trimming is disabled.\nCorresponds to the first\n[SLIDINGWINDOW](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                    "help_text": "Only applies to Illumina reads. If set to `0`, then sliding window trimming is disabled. Corresponds to the first [SLIDINGWINDOW](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic."
                 },
                 "trim_winqual": {
                     "type": "integer",
                     "default": 15,
                     "fa_icon": "fas fa-tachometer-alt",
                     "description": "Required average window base quality",
-                    "help_text": "Only applies to Illumina reads. If set to `0`, then sliding window trimming is disabled.\nCorresponds to the second\n[SLIDINGWINDOW](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                    "help_text": "Only applies to Illumina reads. If set to `0`, then sliding window trimming is disabled. Corresponds to the second [SLIDINGWINDOW](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic."
                 },
                 "trim_leading": {
                     "type": "integer",
                     "default": 15,
                     "fa_icon": "fas fa-angle-double-left",
                     "description": "Minimum quality of bases in leading end of read",
-                    "help_text": "Only applies to Illumina reads. If set to `0`, LEADING trimming is disabled.\nCorresponds to the\n[LEADING](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                    "help_text": "Only applies to Illumina reads. If set to `0`, LEADING trimming is disabled. Corresponds to the [LEADING](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic."
                 },
                 "trim_trailing": {
                     "type": "integer",
                     "default": 15,
                     "fa_icon": "fas fa-angle-double-right",
                     "description": "Minimum quality of bases in trailing end of read",
-                    "help_text": "Only applies to Illumina reads. If set to `0`, TRAILING trimming is disabled.\nCorresponds to the [TRAILING](http://www.usadellab.org/cms/?page=trimmomatic) option of\nTrimmomatic."
+                    "help_text": "Only applies to Illumina reads. If set to `0`, TRAILING trimming is disabled. Corresponds to the [TRAILING](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic."
                 },
                 "trim_headcrop": {
                     "type": "integer",
                     "default": 0,
                     "description": "Number of bases to remove from start of read",
-                    "help_text": "Corresponds to the [HEADCROP](http://www.usadellab.org/cms/?page=trimmomatic)\noption of Trimmomatic for Illumina reads. If set to `0`, then HEADCROP trimming is disabled.\n\nCorresponds to the [--headcrop](https://github.com/wdecoster/nanofilt/#usage)\noption of NanoFilt for Nanopore reads.",
+                    "help_text": "Corresponds to the [HEADCROP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic for Illumina reads. If set to `0`, then HEADCROP trimming is disabled.  Corresponds to the [--headcrop](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt for Nanopore reads.",
                     "fa_icon": "fas fa-angle-up"
                 },
                 "trim_crop": {
                     "type": "integer",
                     "default": 0,
                     "description": "Number of bases to keep from start of read",
-                    "help_text": "Only applies to Illumina reads. If set to `0`, CROP trimming is disabled.\nCorresponds to the\n[CROP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.",
+                    "help_text": "Only applies to Illumina reads. If set to `0`, CROP trimming is disabled. Corresponds to the [CROP](http://www.usadellab.org/cms/?page=trimmomatic) option of Trimmomatic.",
                     "fa_icon": "fas fa-angle-down"
                 },
                 "trim_meanqual": {
@@ -241,28 +220,28 @@
                     "default": 7,
                     "fa_icon": "fas fa-tachometer-alt",
                     "description": "Minimum average base quality of entire reads",
-                    "help_text": "Applies only to ONT reads. Corresponds to the\n[--quality](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
+                    "help_text": "Applies only to ONT reads. Corresponds to the [--quality](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
                 },
                 "trim_mingc": {
                     "type": "integer",
                     "default": 0,
                     "fa_icon": "fas fa-dna",
                     "description": "Minimum GC count of reads",
-                    "help_text": "Only applies to ONT reads. Corresponds to the\n[--minGC](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
+                    "help_text": "Only applies to ONT reads. Corresponds to the [--minGC](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
                 },
                 "trim_maxgc": {
                     "type": "integer",
                     "default": 0,
                     "fa_icon": "fas fa-dna",
                     "description": "Maximum GC count of reads",
-                    "help_text": "Only applies to ONT reads. Corresponds to the\n[--maxGC](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
+                    "help_text": "Only applies to ONT reads. Corresponds to the [--maxGC](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
                 },
                 "trim_tailcrop": {
                     "type": "integer",
                     "default": 0,
                     "fa_icon": "fas fa-angle-down",
                     "description": "Number of bases to remove from the end of each read",
-                    "help_text": "Only applies to ONT reads. Corresponds to the\n[--tailcrop](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
+                    "help_text": "Only applies to ONT reads. Corresponds to the [--tailcrop](https://github.com/wdecoster/nanofilt/#usage) option of NanoFilt."
                 }
             }
         },
@@ -295,7 +274,7 @@
             "type": "object",
             "fa_icon": "fab fa-acquisitions-incorporated",
             "description": "Set the top limit for requested resources for any single job.",
-            "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.\n\nNote that you can not _increase_ the resources requested by any job using these options. For that you will need your own configuration file. See [the nf-core website](https://nf-co.re/usage/configuration) for details.",
+            "help_text": "If you are running on a smaller system, a pipeline step requesting more resources than are available may cause the Nextflow to stop the run with an error. These options allow you to cap the maximum resources requested by any single job so that the pipeline will run on your system.  Note that you can not _increase_ the resources requested by any job using these options. For that you will need your own configuration file. See [the nf-core website](https://nf-co.re/usage/configuration) for details.",
             "properties": {
                 "max_cpus": {
                     "type": "integer",
