@@ -17,7 +17,7 @@ jobs:
           requirements: docs/requirements.txt
       - name: Install nf-core Tools 🍎
         run: |
-          python -m pip install git+https://github.com/krokicki/tools@dev
+          python -m pip install nf-core
       - name: Convert schema to docs 🧑‍⚖️
         run: |
           echo "# Complete Parameter Reference" > docs/parameters.md
