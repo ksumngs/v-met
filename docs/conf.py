@@ -20,6 +20,7 @@ sys.path.insert(0, os.path.abspath('.'))
 project = 'v-met'
 copyright = '2022, K-State Molecular NGS Lab'
 author = 'Thomas A. Christensen II'
+version = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -57,17 +58,13 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
 
-templates_path = [
-    '_templates',
-]
-
 html_sidebars = {
     '**': [
         'versions.html',
     ],
 }
 
-smv_branch_whitelist = r'(develop|master)'
+smv_branch_whitelist = r'.*(develop|master)'
 
 intersphinx_mapping = {
     'nextflow': ('https://nextflow.io/docs/latest/', None),
