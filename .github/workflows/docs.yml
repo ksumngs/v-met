@@ -21,8 +21,6 @@ jobs:
         uses: logikal-code/pip-install@v1.0.0
         with:
           requirements: docs/requirements.txt
-      - name: Convert schema to docs 🧑‍⚖️
-        run: ./paramdocgen
       - name: Build docs 📝
         run: |
           sphinx-multiversion docs docs/_build
@@ -38,3 +36,4 @@ jobs:
         with:
           branch: gh-pages
           folder: docs/_build
+          clean: false

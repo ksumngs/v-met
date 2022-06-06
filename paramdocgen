@@ -1,8 +1,0 @@
-#!/bin/sh
-nf-core schema docs -f \
-  -o docs/parameters.md \
-  -x markdown \
-  -c 'parameter,description,type,required,default'
-sed -i '1s/^.*/# Complete Parameter Reference/' docs/parameters.md
-sed -i "3s/^.*/Every single parameter in the entire pipeline is described here. If you need to tweak every little detail of how your samples are analyzed, you've come to the right place! Note that *every* parameter is described here, even those that shouldn't be used, so proceed with caution!/" docs/parameters.md
-sed -i '1s/^/<!-- markdownlint-disable -->\n/' docs/parameters.md
