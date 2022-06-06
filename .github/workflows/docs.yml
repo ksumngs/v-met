@@ -1,7 +1,11 @@
 name: Documentation
 on:
-  - release
-  - workflow_dispatch
+  push:
+    branches:
+      - master
+      - develop
+  release:
+  workflow_dispatch:
 jobs:
   build:
     name: Sphinx docs to gh-pages
