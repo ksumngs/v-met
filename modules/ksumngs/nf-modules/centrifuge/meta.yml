@@ -1,0 +1,13 @@
+name: recentrifuge
+description: Creates webpage from Centrifuge data
+keywords:
+  - centrifuge
+  - recentrifuge
+  - metagenomics
+  - visualization
+tools:
+input:
+output:
+authors:
+  - "@srbija812"
+  - "@MillironX"

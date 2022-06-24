@@ -1,0 +1,13 @@
+name: centrifuge
+description: Classifies metagenomic sequence data
+keywords:
+  - classify
+  - metagenomics
+  - fastq
+  - db
+tools:
+input:
+output:
+authors:
+  - "@srbija812"
+  - "@MillironX"
