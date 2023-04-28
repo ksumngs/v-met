@@ -55,3 +55,4 @@ lint:
     # Can't find minimum NF version and doesn't like the addition of 'dispatch'
     # to the events
   template_strings: false
+org_path: ksumngs

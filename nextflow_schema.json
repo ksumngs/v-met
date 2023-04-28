@@ -109,7 +109,7 @@
             "properties": {
                 "blast_db": {
                     "type": "string",
-                    "default": null,
+                    "default": "None",
                     "fa_icon": "fas fa-database",
                     "description": "Path to a folder containing a BLAST nt database"
                 },
