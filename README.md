@@ -51,7 +51,7 @@ nextflow run ksumngs/v-met               \
 ### Example: Illumina reads with a relatively complete Kraken2 database
 
 ```bash
-nextflow run ksumngs/yavsap          \
+nextflow run ksumngs/v-met          \
   -profile singularity               \
   --platform illumina                \
   --kraken2_db /databases/kraken2/nt \
@@ -61,7 +61,7 @@ nextflow run ksumngs/yavsap          \
 ### Example: Nanopore reads with a viral-only Kraken2 database
 
 ```bash
-nextflow run ksumngs/yavsap             \
+nextflow run ksumngs/v-met             \
   -profile podman                       \
   --platform nanopore                   \
   --kraken2_db /databases/kraken2/viral \
