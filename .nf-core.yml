@@ -29,10 +29,10 @@ lint:
     # We don't use AWS
     - .github/workflows/awstest.yml
     - .github/workflows/awsfulltest.yml
-  nextflow_config: false
+  nextflow_config:
   # Currently not supported, but hopefully soon!
   # See https://github.com/nf-core/tools/issues/1031
-  # - mainfest.name
+    - mainfest.name
   # - manifest.homePage
   files_unchanged:
     - .markdownlint.yml
@@ -55,3 +55,4 @@ lint:
     # Can't find minimum NF version and doesn't like the addition of 'dispatch'
     # to the events
   template_strings: false
+org_path: ksumngs
