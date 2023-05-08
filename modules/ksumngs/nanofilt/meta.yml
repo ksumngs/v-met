@@ -8,7 +8,7 @@ tools:
       homepage: https://gigabaseorgigabyte.wordpress.com/2017/06/05/trimming-and-filtering-oxford-nanopore-sequencing-reads/
       tool_dev_url: https://github.com/wdecoster/nanofilt
       doi: "10.1093/bioinformatics/bty149"
-      licence: ['MIT']
+      licence: ["MIT"]
 
 input:
   - meta:
@@ -39,7 +39,6 @@ output:
       type: file
       description: File with stats on filtered reads
       pattern: "*.{log}"
-
 
 authors:
   - "@MillironX"

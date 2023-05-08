@@ -57,7 +57,7 @@ process CAT_FASTQ {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            gzip: echo \$(gzip --version | head -n1 | sed 's/^gzip //')
+            gzip: \$(gzip --version | head -n1 | sed 's/^gzip //')
         END_VERSIONS
         """
     }

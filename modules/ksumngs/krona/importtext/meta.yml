@@ -8,7 +8,7 @@ tools:
   - krona:
       description: Krona Tools is a set of scripts to create Krona charts from several Bioinformatics tools as well as from text and XML files.
       homepage: https://github.com/marbl/Krona/wiki
-      licence: ['BSD']
+      licence: ["BSD"]
 
 input:
   - krona:

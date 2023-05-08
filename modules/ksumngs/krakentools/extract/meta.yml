@@ -9,7 +9,7 @@ tools:
       description: KrakenTools is a suite of scripts to be used for post-analysis of Kraken/KrakenUniq/Kraken2/Bracken results. Please cite the relevant paper if using KrakenTools with any of the listed programs.
       homepage: https://ccb.jhu.edu/software/krakentools/
       tool_dev_url: https://github.com/jenniferlu717/KrakenTools
-      licence: ['GPL v3']
+      licence: ["GPL v3"]
 
 input:
   - meta:
@@ -25,8 +25,8 @@ input:
       type: file
       description: Kraken output describing the classification of each reads
   - kreport:
-        type: file
-        description: Kraken report with aggregate classification stats
+      type: file
+      description: Kraken report with aggregate classification stats
   - taxids:
       type: string
       description: Space-separated list of taxonomic ids to extract

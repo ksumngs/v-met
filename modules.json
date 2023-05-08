@@ -1,54 +1,95 @@
 {
-    "name": "v-met",
+    "name": "ksumngs/v-met",
     "homePage": "https://ksumngs.github.io/v-met",
     "repos": {
-        "ksumngs/nf-modules": {
-            "cat/fastq": {
-                "git_sha": "da5728117c6caaee428ed8729e88b93abc60c5fc"
-            },
-            "kraken2": {
-                "git_sha": "e0b2138159eab5b54a4618f320895a308fcf53fa"
-            },
-            "krakentools/extract": {
-                "git_sha": "181a04778a81494dc71b1d68b514b43cfef1512c"
-            },
-            "krakentools/kreport2krona": {
-                "git_sha": "c6c9d4fad20eb77232756fc08403fbc4e9988ce2"
-            },
-            "krona/importtext": {
-                "git_sha": "f423673c57aba461cf16bd3bc628e36e33b20029"
-            },
-            "nanofilt": {
-                "git_sha": "8e2140d607a9bbbf82ddf1604609f22e7371f9fb"
-            },
-            "nanostat": {
-                "git_sha": "89fce539f438cc7109b85fb7a5b75d5091382d54"
-            },
-            "trimmomatic": {
-                "git_sha": "78eb5cef96c8bbe59838c03c281780da50cfdef2"
+        "https://github.com/ksumngs/nf-modules": {
+            "modules": {
+                "ksumngs": {
+                    "cat/fastq": {
+                        "branch": "update_nf",
+                        "git_sha": "f39d201931b5eecdc15d2605e3cad9751df462a9",
+                        "installed_by": ["modules"]
+                    },
+                    "kraken2": {
+                        "branch": "update_nf",
+                        "git_sha": "8098c3fd301bcc759156e5fd2c84c5b19c2ca9d2",
+                        "installed_by": ["modules"]
+                    },
+                    "krakentools/extract": {
+                        "branch": "update_nf",
+                        "git_sha": "8098c3fd301bcc759156e5fd2c84c5b19c2ca9d2",
+                        "installed_by": ["modules"]
+                    },
+                    "krakentools/kreport2krona": {
+                        "branch": "update_nf",
+                        "git_sha": "8098c3fd301bcc759156e5fd2c84c5b19c2ca9d2",
+                        "installed_by": ["modules"]
+                    },
+                    "krona/importtext": {
+                        "branch": "update_nf",
+                        "git_sha": "8098c3fd301bcc759156e5fd2c84c5b19c2ca9d2",
+                        "installed_by": ["modules"]
+                    },
+                    "nanofilt": {
+                        "branch": "update_nf",
+                        "git_sha": "8098c3fd301bcc759156e5fd2c84c5b19c2ca9d2",
+                        "installed_by": ["modules"]
+                    },
+                    "nanostat": {
+                        "branch": "update_nf",
+                        "git_sha": "8098c3fd301bcc759156e5fd2c84c5b19c2ca9d2",
+                        "installed_by": ["modules"]
+                    },
+                    "trimmomatic": {
+                        "branch": "update_nf",
+                        "git_sha": "8098c3fd301bcc759156e5fd2c84c5b19c2ca9d2",
+                        "installed_by": ["modules"]
+                    }
+                }
             }
         },
-        "nf-core/modules": {
-            "blast/blastn": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
+        "https://github.com/nf-core/modules.git": {
+            "modules": {
+                "nf-core": {
+                    "blast/blastn": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
+                    "custom/dumpsoftwareversions": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
+                    "fastqc": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
+                    "multiqc": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
+                    "seqkit/split2": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
+                    "seqtk/mergepe": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    },
+                    "seqtk/seq": {
+                        "branch": "master",
+                        "git_sha": "911696ea0b62df80e900ef244d7867d177971f73",
+                        "installed_by": ["modules"]
+                    }
+                }
             },
-            "custom/dumpsoftwareversions": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "fastqc": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "multiqc": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "seqkit/split2": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "seqtk/mergepe": {
-                "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d"
-            },
-            "seqtk/seq": {
-                "git_sha": "1016c9bd1a7b23e31b8215b8c33095e733080735"
+            "subworkflows": {
+                "nf-core": {}
             }
         }
     }

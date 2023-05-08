@@ -1,32 +1,27 @@
 name: krakentools_kreport2krona
-## TODO nf-core: Add a description of the module and list keywords
-description: write your description here
+description: Takes a Kraken report file and prints out a krona-compatible TEXT file
 keywords:
-  - sort
+  - kraken
+  - krona
+  - metagenomics
+  - visualization
 tools:
   - krakentools:
-      ## TODO nf-core: Add a description and other details for the software below
       description: KrakenTools is a suite of scripts to be used for post-analysis of Kraken/KrakenUniq/Kraken2/Bracken results. Please cite the relevant paper if using KrakenTools with any of the listed programs.
-      homepage: None
-      documentation: None
-      tool_dev_url: None
-      doi: ""
-      licence: ['GPL v3']
+      homepage: https://github.com/jenniferlu717/KrakenTools
+      licence: ["GPL v3"]
 
-## TODO nf-core: Add a description of all of the variables used as input
 input:
   - meta:
       type: map
       description: |
         Groovy Map containing sample information
         e.g. [ id:'test', single_end:false ]
-  ## TODO nf-core: Delete / customise this example input
-  - bam:
+  - kreport:
       type: file
-      description: BAM/CRAM/SAM file
-      pattern: "*.{bam,cram,sam}"
+      description: Kraken report
+      pattern: "*.{txt,kreport}"
 
-## TODO nf-core: Add a description of all of the variables used as output
 output:
   - meta:
       type: map
@@ -37,11 +32,10 @@ output:
       type: file
       description: File containing software versions
       pattern: "versions.yml"
-  ## TODO nf-core: Delete / customise this example output
-  - bam:
+  - krona:
       type: file
-      description: Sorted BAM/CRAM/SAM file
-      pattern: "*.{bam,cram,sam}"
+      description: Krona text file converted from Kraken report
+      pattern: "*.{krona}"
 
 authors:
   - "@MillironX"

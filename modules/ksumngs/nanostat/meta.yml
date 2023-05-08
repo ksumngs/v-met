@@ -8,7 +8,7 @@ tools:
       description: Calculate statistics for Oxford Nanopore sequencing data and alignments
       homepage: https://github.com/wdecoster/nanostat
       doi: "10.1093/bioinformatics/bty149"
-      licence: ['MIT']
+      licence: ["MIT"]
 
 input:
   - meta:
@@ -35,7 +35,6 @@ output:
       type: file
       description: Read/alignment statistics report
       pattern: "*.{log}"
-
 
 authors:
   - "@MillironX"
