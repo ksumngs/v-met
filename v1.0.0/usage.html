@@ -149,7 +149,7 @@ sample names, and each subsequent column contains a path to reads files. All
 sample names will be cleaned of any shell metacharacters, and will be truncated
 at the first underscore. Paths are resolved relative to the current directory.
 Path names can contain wildcard characters, and will resolve as glob patterns
-identical to how they would in Nextflow’s <a class="reference external" href="https://nextflow.io/docs/latest/channel.html#channel-path" title="(in Nextflow v22.04)"><span class="xref std std-ref">Channel.fromPath</span></a>
+identical to how they would in Nextflow’s <span class="xref std std-ref">Channel.fromPath</span>
 constructor. For paired-end reads, forward reads should be specified in the
 even-number columns (<code class="docutils literal notranslate"><span class="pre">2,4,6</span></code>), and reverse reads should be specified in the
 odd-number columns (<code class="docutils literal notranslate"><span class="pre">3,5,7</span></code>).</p>
@@ -263,7 +263,7 @@ container on RHEL-based distros thanks to their particular SELinux
 implementation.</p>
 </dd>
 <dt>singularity</dt><dd><p><strong>Recommended</strong></p>
-<p>Use the <a class="reference external" href="https://apptainer.org/user-docs/master/index.html" title="(in Singularity User Guide v3.8)"><span class="xref std std-doc">Singularity</span></a> container engine. This engine
+<p>Use the <span class="xref std std-doc">Singularity</span> container engine. This engine
 was built with HPC use in mind, and doesn’t require any special permissions to
 run. Singularity’s downfall is how it will expose your home directory to the
 container, resulting in rare, but difficult to explain bugs when files
@@ -353,33 +353,33 @@ setup for your own HPC needs.</p>
 publically available info on their website.</p>
 <p>First, we see that Ceres uses SLURM and Singularity. Excellent.
 Let’s set Nextflow up to use SLURM:</p>
-<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
-<span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span><span class="w"></span>
-<span class="o">}</span><span class="w"></span>
+<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<span class="o">}</span>
 </pre></div>
 </div>
 <p>Some SLURM systems require an account to be passed with every job submission.
 Let’s add ours just to be safe.</p>
-<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
-<span class="w">    </span><span class="n">executor</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;--account=ksumngs&#39;</span><span class="w"></span>
-<span class="o">}</span><span class="w"></span>
+<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="n">executor</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;--account=ksumngs&#39;</span>
+<span class="o">}</span>
 </pre></div>
 </div>
 <p>For this example, I don’t think we’ll need to do anything special with the low,
 medium, and high processes, but let’s make sure that the long and high memory
 processes get submitted to partitions that can handle them.</p>
-<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
-<span class="w">    </span><span class="n">executor</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;--account=ksumngs&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="n">module</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="nl">withLabel:</span><span class="w"> </span><span class="n">process_long</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
-<span class="w">        </span><span class="n">queue</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;long&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="o">}</span><span class="w"></span>
-<span class="w">    </span><span class="nl">withLabel:</span><span class="w"> </span><span class="n">process_high_memory</span><span class="w"> </span><span class="o">{</span><span class="w"></span>
-<span class="w">        </span><span class="n">queue</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;mem&#39;</span><span class="w"></span>
-<span class="w">    </span><span class="o">}</span><span class="w"></span>
-<span class="o">}</span><span class="w"></span>
+<div class="highlight-groovy notranslate"><div class="highlight"><pre><span></span><span class="n">process</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="n">executor</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;slurm&#39;</span>
+<span class="w">    </span><span class="n">clusterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;--account=ksumngs&#39;</span>
+<span class="w">    </span><span class="n">module</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;singularity&#39;</span>
+<span class="w">    </span><span class="nl">withLabel:</span><span class="w"> </span><span class="n">process_long</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="n">queue</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;long&#39;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span><span class="nl">withLabel:</span><span class="w"> </span><span class="n">process_high_memory</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="n">queue</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;mem&#39;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="o">}</span>
 </pre></div>
 </div>
 <p>Now, we can place this file in <code class="docutils literal notranslate"><span class="pre">$HOME/.nextflow/nextflow.config</span></code>, and these

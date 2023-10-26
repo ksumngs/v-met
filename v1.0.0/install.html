@@ -138,20 +138,20 @@ is on your <code class="docutils literal notranslate"><span class="pre">PATH</sp
 <span class="nv">KRAKEN2_DIR</span><span class="o">=</span><span class="nv">$HOME</span>/.local/opt/kraken2
 <span class="nv">KRAKEN2_DEFAULT_DB</span><span class="o">=</span>/kraken2/complete-refseq-unmasked
 
-git clone https://github.com/ksumngs/kraken2.git
-<span class="nb">cd</span> kraken2
-./install_kraken2.sh <span class="nv">$KRAKEN2_DIR</span>
-ln -s <span class="nv">$KRAKEN2_DIR</span>/kraken2<span class="o">{</span>,-build,-inspect,lib.pm<span class="o">}</span> <span class="nv">$HOME</span>/.local/bin
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ksumngs/kraken2.git
+<span class="nb">cd</span><span class="w"> </span>kraken2
+./install_kraken2.sh<span class="w"> </span><span class="nv">$KRAKEN2_DIR</span>
+ln<span class="w"> </span>-s<span class="w"> </span><span class="nv">$KRAKEN2_DIR</span>/kraken2<span class="o">{</span>,-build,-inspect,lib.pm<span class="o">}</span><span class="w"> </span><span class="nv">$HOME</span>/.local/bin
 
 <span class="nb">cd</span>
-kraken2-build --download-taxonomy --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
-<span class="nv">LIBRARIES</span><span class="o">=(</span>archaea bacteria plasmid viral plant fungi protozoa UniVec_Core plastid mitochondrion invertebrate vertebrate_mammalian vertebrate_other<span class="o">)</span>
-<span class="k">for</span> LIB <span class="k">in</span> <span class="si">${</span><span class="nv">LIBRARIES</span><span class="p">[@]</span><span class="si">}</span><span class="p">;</span> <span class="k">do</span>
-  kraken2-build --download-library <span class="nv">$LIB</span> --db <span class="nv">$KRAKEN2_DEFAULT_DB</span> --no-masking
+kraken2-build<span class="w"> </span>--download-taxonomy<span class="w"> </span>--db<span class="w"> </span><span class="nv">$KRAKEN2_DEFAULT_DB</span>
+<span class="nv">LIBRARIES</span><span class="o">=(</span>archaea<span class="w"> </span>bacteria<span class="w"> </span>plasmid<span class="w"> </span>viral<span class="w"> </span>plant<span class="w"> </span>fungi<span class="w"> </span>protozoa<span class="w"> </span>UniVec_Core<span class="w"> </span>plastid<span class="w"> </span>mitochondrion<span class="w"> </span>invertebrate<span class="w"> </span>vertebrate_mammalian<span class="w"> </span>vertebrate_other<span class="o">)</span>
+<span class="k">for</span><span class="w"> </span>LIB<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="si">${</span><span class="nv">LIBRARIES</span><span class="p">[@]</span><span class="si">}</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">  </span>kraken2-build<span class="w"> </span>--download-library<span class="w"> </span><span class="nv">$LIB</span><span class="w"> </span>--db<span class="w"> </span><span class="nv">$KRAKEN2_DEFAULT_DB</span><span class="w"> </span>--no-masking
 <span class="k">done</span>
 
-kraken2-build --build --db <span class="nv">$KRAKEN2_DEFAULT_DB</span> --threads <span class="k">$(</span>nproc<span class="k">)</span>
-kraken2-build --clean --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+kraken2-build<span class="w"> </span>--build<span class="w"> </span>--db<span class="w"> </span><span class="nv">$KRAKEN2_DEFAULT_DB</span><span class="w"> </span>--threads<span class="w"> </span><span class="k">$(</span>nproc<span class="k">)</span>
+kraken2-build<span class="w"> </span>--clean<span class="w"> </span>--db<span class="w"> </span><span class="nv">$KRAKEN2_DEFAULT_DB</span>
 </pre></div>
 </div>
 <p>For some viruses that don’t have good RefSeq entries (e.g. rotavirus), it is
@@ -164,17 +164,17 @@ build process and cause it to crash. You can get this database using</p>
 <span class="nv">KRAKEN2_DIR</span><span class="o">=</span><span class="nv">$HOME</span>/.local/opt/kraken2
 <span class="nv">KRAKEN2_DEFAULT_DB</span><span class="o">=</span>/kraken2/complete-refseq-unmasked
 
-git clone https://github.com/ksumngs/kraken2.git
-<span class="nb">cd</span> kraken2
-./install_kraken2.sh <span class="nv">$KRAKEN2_DIR</span>
-ln -s <span class="nv">$KRAKEN2_DIR</span>/kraken2<span class="o">{</span>,-build,-inspect,lib.pm<span class="o">}</span> <span class="nv">$HOME</span>/.local/bin
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ksumngs/kraken2.git
+<span class="nb">cd</span><span class="w"> </span>kraken2
+./install_kraken2.sh<span class="w"> </span><span class="nv">$KRAKEN2_DIR</span>
+ln<span class="w"> </span>-s<span class="w"> </span><span class="nv">$KRAKEN2_DIR</span>/kraken2<span class="o">{</span>,-build,-inspect,lib.pm<span class="o">}</span><span class="w"> </span><span class="nv">$HOME</span>/.local/bin
 
 <span class="nb">cd</span>
-kraken2-build --download-taxonomy --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
-kraken2-build --download-library nt --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+kraken2-build<span class="w"> </span>--download-taxonomy<span class="w"> </span>--db<span class="w"> </span><span class="nv">$KRAKEN2_DEFAULT_DB</span>
+kraken2-build<span class="w"> </span>--download-library<span class="w"> </span>nt<span class="w"> </span>--db<span class="w"> </span><span class="nv">$KRAKEN2_DEFAULT_DB</span>
 
-kraken2-build --build --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
-kraken2-build --clean --db <span class="nv">$KRAKEN2_DEFAULT_DB</span>
+kraken2-build<span class="w"> </span>--build<span class="w"> </span>--db<span class="w"> </span><span class="nv">$KRAKEN2_DEFAULT_DB</span>
+kraken2-build<span class="w"> </span>--clean<span class="w"> </span>--db<span class="w"> </span><span class="nv">$KRAKEN2_DEFAULT_DB</span>
 </pre></div>
 </div>
 </section>
@@ -185,8 +185,8 @@ bypassed by passing <code class="docutils literal notranslate"><span class="pre"
 <p>To download the database, use NCBI’s
 <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK569850">update_blastdb.pl</a> script, like</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
-<span class="nb">cd</span> /blastdb
-update_blastdb.pl --decompress nt taxdb
+<span class="nb">cd</span><span class="w"> </span>/blastdb
+update_blastdb.pl<span class="w"> </span>--decompress<span class="w"> </span>nt<span class="w"> </span>taxdb
 </pre></div>
 </div>
 <p>Downloading the <code class="docutils literal notranslate"><span class="pre">taxdb</span></code> database into the same directory allows BLAST to give
