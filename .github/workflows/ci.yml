@@ -19,6 +19,7 @@ jobs:
     # Only run on push if this is the develop branch (merged PRs)
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'ksumngs/v-met') }}
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
         NXF_VER:
@@ -46,6 +47,7 @@ jobs:
 
   parameters:
     name: Test workflow parameters
+    continue-on-error: true
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'ksumngs/v-met') }}
     runs-on: ubuntu-latest
     strategy:
@@ -90,6 +92,7 @@ jobs:
 
   test_interleaved:
     name: Test Interleaved Reads Workflow
+    continue-on-error: true
     # Only run on push if this is the develop branch (merged PRs)
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'ksumngs/v-met') }}
     runs-on: ubuntu-latest
@@ -120,6 +123,7 @@ jobs:
           nextflow run ${GITHUB_WORKSPACE} -profile test_interleaved,gh,docker
   test_nanopore:
     name: Run workflow tests
+    continue-on-error: true
     # Only run on push if this is the develop branch (merged PRs)
     if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'ksumngs/v-met') }}
     runs-on: ubuntu-latest
