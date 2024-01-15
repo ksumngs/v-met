@@ -32,7 +32,7 @@ jobs:
           - "23.10"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: MillironX/setup-nextflow@octokit-throttling-dist
@@ -69,7 +69,7 @@ jobs:
           - "23.10"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: MillironX/setup-nextflow@octokit-throttling-dist
@@ -106,7 +106,7 @@ jobs:
           - "23.10"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: MillironX/setup-nextflow@octokit-throttling-dist
@@ -136,7 +136,7 @@ jobs:
           - "23.10"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Nextflow
         uses: MillironX/setup-nextflow@octokit-throttling-dist
